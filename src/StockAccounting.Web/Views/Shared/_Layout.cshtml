@@ -1,0 +1,88 @@
+﻿@using StockAccounting.Web.Utils;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - StockAccounting</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/bootstrap4/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/fortawesome/fontawesome-free/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-table/dist/bootstrap-table.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"  />
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark border-bottom box-shadow mb-3" style="background-color:#2d4772">
+            <div><h2 class="text-danger"></h2></div>
+            <div class="container">
+                <h1 class="navbar-brand"><i class="fa-solid fa-wrench fa-fw"></i>Stock Accounting</h1>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link @Html.IsSelected(actions: "List", controllers: "ExternalData")" asp-controller="ExternalData" asp-action="List">Products</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Html.IsSelected(actions: "List", controllers: "InventoryData")" asp-controller="InventoryData" asp-action="List">Documents</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Html.IsSelected(actions: "List", controllers: "EmployeeData")" asp-controller="EmployeeData" asp-action="List">Employees</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Html.IsSelected(actions: "List", controllers: "StockData")" asp-controller="StockData" asp-action="List">Stocks</a>
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle
+                               @Html.IsSelected(actions: "List", controllers: "Employee")"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="Administration">Administration</a>
+                            <div class="dropdown-menu" aria-labelledby="Administration">
+                                <a class="dropdown-item" asp-controller="EmployeeData" asp-action="List">Employees</a>
+                            </div>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div>
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col nav justify-content-start">&copy; 2023 SIA Dayton</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/bootstrap4/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/tableexport.jquery.plugin/tableExport.min.js"></script>
+    <script src="~/lib/bootstrap-table/dist/bootstrap-table.min.js"></script>
+    <script src="~/lib/bootstrap-table/dist/bootstrap-table-locale-all.min.js"></script>
+    <script src="~/lib/bootstrap-table/dist/extensions/export/bootstrap-table-export.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.5/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+﻿html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.btn-group-xs > .btn, .btn-xs {
+    padding: .47rem .6rem;
+    font-size: .875rem;
+    line-height: .5;
+    border-radius: .2rem;
+}
+
+.fa-fw {
+    padding-right: 10px;
+}
+
+.multi_select_box {
+    width: 400px;
+    margin: 80px auto;
+}
+
+.multi_select_box select {
+    width: 100%;
+}
+
+.multi_select_box button {
+    background-color: darkblue !important;
+    color: #fff !important;
+    padding: 15px 25px;
+}
+
+.d0 {
+    background-color: #CAD5E3;
+    color: black;
+}
+
+.d1 {
+    background-color: #9999CC;
+    color: black;
+}
+
+table.dataTable.no-footer{
+    border-bottom: 0px !important;
+}
+
+table.dataTable > thead > tr > th, table.dataTable > thead > tr > td {
+    padding: 0.75rem !important;
+    border-bottom: 1px rgba(0, 0, 0, 0.3) !important;
+}
+
+table.dataTable {
+    width: 100%;
+    margin-bottom: 1rem !important;
+    clear: both;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+table.dataTable tbody td {
+    padding: 0.75rem !important;
+}
+
+div.dt-top-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+
+div.dt-center-in-div {
+    margin: 0 auto;
+}
+
+div.dt-filter-spacer {
+    margin: 10px 0;
+}
+
+.filter-checkbox {
+    margin-left: 30px
+}
+
+.dataTables_filter {
+    position: relative;
+}
+
+.dataTables_filter input {
+    width: 250px;
+    height: 32px;
+    background: #fcfcfc;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    box-shadow: 0 0 3px #ccc, 0 10px 15px #ebebeb inset;
+    text-indent: 10px;
+}
+
+.dataTables_filter .fa-search {
+    position: absolute;
+    top: 10px;
+    left: auto;
+    right: 10px;
+}
+
+.page-link-datatable {
+    padding: 0.5rem 0.75rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+}
+
+.page-link-datatable:hover {
+    text-decoration: none;
+}
+
+.active-button-datatable {
+    background: #007bff;
+    color: #FFFFFF;
+}
+
+.active-button-datatable:hover {
+    color: #FFFFFF;
+}
+
+.select2-container .select2-selection--single {
+    height: 38px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #444;
+    line-height: 38px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px !important;
+}
+
+.select2-container--default .select2-selection--single {
+    border: 1px solid #ced4da !important;
+}
+
+.btn-margin-left {
+    margin-left: 15px;
+}

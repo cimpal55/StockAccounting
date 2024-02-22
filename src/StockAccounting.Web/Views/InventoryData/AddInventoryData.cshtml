@@ -1,0 +1,49 @@
+﻿@model InventoryDataViewModel
+
+<div id="inventoryDataModal" class="modal-body">
+    <form asp-action="InsertInventoryData" asp-controller="InventoryData" data-ajax-method="POST" data-ajax="true" data-ajax-complete="inventoryDataModalComplete">
+        <div id="newInventoryDataModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add new document</h5>
+                    </div>
+                    <div class="modal-body" id="inventoryDataModalDetails">
+                        <div class="form-group">
+                            <label asp-for="Employee1Id" class="control-label"><b>Nodeva</b></label>
+                            <select asp-for="Employee1Id" class="form-control">
+                                <option value="0" selected="selected">-Choose-</option>
+                                @if (Model is { Employees: { } })
+                                {
+                                    @foreach (var item in Model.Employees.OrderBy(x => x.Name))
+                                    {
+                                        <option value="@item.Id">@item.Name @item.Surname @item.Code @item.Email</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Employee1Id" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Employee2Id" class="control-label"><b>Pieņēma</b></label>
+                            <select asp-for="Employee2Id" class="form-control">
+                                <option value="0" selected="selected">-Choose-</option>
+                                @if (Model is { Employees: { } })
+                                {
+                                    @foreach (var item in Model.Employees.OrderBy(x => x.Name))
+                                    {
+                                        <option value="@item.Id">@item.Name @item.Surname @item.Code @item.Email</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Employee2Id" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input id="btnSubmit" type="submit" value="Submit" class="btn btn-primary" />
+                        <button id="inventoryDataModalClose" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

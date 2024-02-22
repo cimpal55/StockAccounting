@@ -1,0 +1,141 @@
+﻿<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="StockAccounting.Checklist.Views.MainView"
+             xmlns:enum="clr-namespace:StockAccounting.Checklist.Enums"
+             xmlns:utility="clr-namespace:StockAccounting.Checklist.Utility;assembly=StockAccounting.Checklist"
+             xmlns:controls="clr-namespace:StockAccounting.Checklist.Controls"
+             utility:ViewModelLocator.AutoWireViewModel="True"
+             Title="StockAccounting">
+    <StackLayout>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="4*"></RowDefinition>
+                <RowDefinition Height="4*"></RowDefinition>
+                <RowDefinition Height="4*"></RowDefinition>
+                <RowDefinition Height="4*"></RowDefinition>
+                <RowDefinition Height="4*"></RowDefinition>
+                <RowDefinition Height="4*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+        </Grid>
+
+
+        <StackLayout Orientation="Horizontal">
+            <controls:ExtendedEntry x:Name="firstEmployee"
+                                    Text="{Binding FirstEmployee, Mode=TwoWay}"
+                                    Placeholder="Nodeva"
+                                    IsTextPredictionEnabled="false"
+                                    WidthRequest="300"
+                                    ReturnType="Next"
+                                    ReturnCommand="{Binding InitializeBarcodeScannerCommand}"
+                                    ReturnCommandParameter="{x:Static enum:BarcodeScannerMode.First}">
+                <Entry.Behaviors>
+                    <utility:EntryFocusBehavior NextFocusElementName="secondEmployee"/>
+                </Entry.Behaviors>
+            </controls:ExtendedEntry>
+
+            <StackLayout Orientation="Vertical">
+                <Button Command="{Binding ButtonCommand}"
+                        CommandParameter="{Reference firstPicker}"
+                        ImageSource="icon_arrow.png"
+                        Grid.Row="2"
+                        WidthRequest="50"
+                        BackgroundColor="Transparent"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center">
+                </Button>
+            </StackLayout>
+        </StackLayout>
+
+        <Picker ItemsSource="{Binding EmployeeDataList}"
+                ItemDisplayBinding="{Binding FullName}"
+                SelectedItem="{Binding FirstSelectedEmployee, Mode=TwoWay}"
+                IsVisible="false"
+                x:Name="firstPicker">
+            <Picker.Behaviors>
+                <utility:PickerFocusBehavior NextFocusElementName="secondEmployee"/>
+            </Picker.Behaviors>
+        </Picker>
+
+        <Picker ItemsSource="{Binding EmployeeDataList}"
+                ItemDisplayBinding="{Binding FullName}"
+                SelectedItem="{Binding SecondSelectedEmployee, Mode=TwoWay}"
+                IsVisible="false"
+                x:Name="secondPicker">
+            <Picker.Behaviors>
+                <utility:PickerFocusBehavior NextFocusElementName="scannedData"/>
+            </Picker.Behaviors>
+        </Picker>
+
+        <StackLayout Orientation="Horizontal">
+            <controls:ExtendedEntry Grid.Row="3" 
+                                    x:Name="secondEmployee"
+                                    Text="{Binding SecondEmployee, Mode=TwoWay}"
+                                    Placeholder="Pieņēma"
+                                    IsTextPredictionEnabled="false"
+                                    WidthRequest="300"
+                                    ReturnCommand="{Binding InitializeBarcodeScannerCommand}"
+                                    ReturnCommandParameter="{x:Static enum:BarcodeScannerMode.Second}">
+                <Entry.Behaviors>
+                    <utility:EntryFocusBehavior NextFocusElementName="scannedData"/>
+                </Entry.Behaviors>
+            </controls:ExtendedEntry>
+            
+            <StackLayout Orientation="Vertical">
+                <Button Command="{Binding ButtonCommand}"
+                        CommandParameter="{Reference secondPicker}"
+                        ImageSource="icon_arrow.png"
+                        Grid.Row="2"
+                        WidthRequest="50"
+                        BackgroundColor="Transparent"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center">
+                </Button>
+            </StackLayout>
+        </StackLayout>
+
+        <controls:ExtendedEntry Text="{Binding Barcode, Mode=TwoWay}"  
+                                x:Name="scannedData"
+                                Keyboard="Numeric"
+                                Placeholder="Skenēšana"
+                                Grid.Row="3"
+                                IsTextPredictionEnabled="false" 
+                                WidthRequest="300"
+                                MaxLength="13">
+            <Entry.Behaviors>
+                <utility:EntryFocusBehavior NextFocusElementName="scannedData"/>
+            </Entry.Behaviors>            
+        </controls:ExtendedEntry>
+
+        <ListView Grid.Row="4" 
+                  ItemsSource="{Binding ShownScannedDataList}"
+                  HasUnevenRows="True"
+                  x:Name="scannedList">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <ViewCell.ContextActions>
+                            <MenuItem Command="{Binding Path=BindingContext.DeleteRowCommand, Source={x:Reference scannedList}}"
+                                      CommandParameter="{Binding .}"
+                                      Text="Delete" 
+                                      IsDestructive="True"/>
+                        </ViewCell.ContextActions>
+                        <StackLayout Orientation="Horizontal" BackgroundColor="Transparent">
+                            <Label Text="{Binding FullName}"
+                                   WidthRequest="300"/>
+                            <controls:CustomStepper HorizontalOptions="Center"
+                                                    Text="{Binding Quantity, Mode=TwoWay}"
+                                                    VerticalOptions="Center"
+                                                    MinimumValue="0.001"/>
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Button Text="Insert scanned data"
+                Command="{Binding InsertInventoryDataCommand}"
+                Grid.Row="7"/>
+
+    </StackLayout>
+</ContentPage>
