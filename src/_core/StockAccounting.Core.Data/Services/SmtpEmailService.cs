@@ -36,6 +36,7 @@ namespace StockAccounting.Core.Data.Services
                     Quantity = item.Quantity,
                     Created = date
                 };
+
                 stocks.Add(stock);
             }
 
@@ -59,6 +60,7 @@ namespace StockAccounting.Core.Data.Services
 
             return textBody;
         }
+
         public void SendEmail(string emailTo, List<ScannedDataBaseModel> stocksList)
         {
             if (stocksList.Count == 0)
@@ -95,5 +97,6 @@ namespace StockAccounting.Core.Data.Services
 
             smtpClient.Send(mailMessage);
         }
+
     }
 }

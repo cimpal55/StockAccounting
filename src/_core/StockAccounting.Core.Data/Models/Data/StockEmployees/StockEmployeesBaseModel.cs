@@ -10,6 +10,12 @@ namespace StockAccounting.Core.Data.Models.Data
         [Column(StockEmployees.Id, IsPrimaryKey = true, IsIdentity = true)]
         public int Id { get; set; }
 
+        [Column(ScannedData.DocumentSerialNumber, CanBeNull = false)]
+        public string DocumentSerialNumber { get; set; } = string.Empty;
+
+        [Column(ScannedData.DocumentNumber, CanBeNull = false)]
+        public int? DocumentNumber { get; set; }
+
         [Column(StockEmployees.StockDataId, CanBeNull = false)]
         public int StockDataId { get; set; }
 
@@ -21,6 +27,9 @@ namespace StockAccounting.Core.Data.Models.Data
 
         [Column(StockEmployees.Quantity, CanBeNull = false)]
         public decimal Quantity { get; set; }
+
+        [Column(StockEmployees.LastSynchronization, CanBeNull = false)]
+        public DateTime? LastSynchronization { get; set; }
 
         [Column(StockEmployees.Created, CanBeNull = false)]
         public DateTime Created { get; set; }

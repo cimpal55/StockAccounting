@@ -15,7 +15,7 @@ $(document).ready(function () {
         paging: true,
         searching: true,
         info: false,
-        order: [[2, 'asc']],
+        order: [[3, 'asc']],
         columnDefs: [
             { width: 50, targets: 0, className: 'select-checkbox' },
             { width: 200, targets: 1 },
@@ -32,8 +32,17 @@ $(document).ready(function () {
         })
     });
 
-    $('#searchEmployeeDataId').keyup(function () {
-        table.search($(this).val()).draw();
+    $("a.search-link").click(function (e) {
+        e.preventDefault();
+
+        var searchText = $("#searchEmployeeDataId").val();
+        table.search(searchText).draw();
+    });
+
+    $('#searchEmployeeDataId').keyup(function (e) {
+        if (e.keyCode == 13) {
+            table.search($(this).val()).draw();
+        }
     })
 
     $.extend(true, $.fn.dataTable.defaults, {
@@ -77,7 +86,7 @@ $(function () {
 });
 
 $(function () {
-    $(".dropdown-item").click(function () {
+    $(".employeeExcel").click(function () {
         var table = $('#employeeTable').DataTable();
         var idList = [];
         var mode = $(this).attr("value");

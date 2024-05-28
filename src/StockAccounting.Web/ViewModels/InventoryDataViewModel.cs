@@ -15,6 +15,9 @@ namespace StockAccounting.Web.ViewModels
         [Range(1, int.MaxValue, ErrorMessage = "This field is required!")]
         public int Employee2Id { get; set; }
 
+        [Required(ErrorMessage = "This field is required!")]
+        public DateTime Created { get; set; }
+
         public IEnumerable<EmployeeDataModel>? Employees { get; set; }
 
         public IEnumerable<ExternalDataModel>? ExternalData { get; set; }

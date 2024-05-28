@@ -1,4 +1,5 @@
 ﻿using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Repositories;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 using StockAccounting.Web.Services.Interfaces;
 using StockAccounting.Web.Utils;
@@ -12,19 +13,22 @@ namespace StockAccounting.Web.Services
         private readonly IInventoryDataRepository _inventoryRepository;
         private readonly IEmployeeDataRepository _employeeRepository;
         private readonly IStockDataRepository _stockRepository;
+        private readonly IToolkitRepository _toolkitRepository;
 
         public PaginationService(
             IExternalDataRepository externalDataRepository,
             IScannedDataRepository scannedRepository,
             IInventoryDataRepository inventoryDataRepository,
             IEmployeeDataRepository employeeRepository,
-            IStockDataRepository stockRepository)
+            IStockDataRepository stockRepository,
+            IToolkitRepository toolkitRepository)
         {
             _externalRepository = externalDataRepository;
             _scannedRepository = scannedRepository;
             _inventoryRepository = inventoryDataRepository;
             _employeeRepository = employeeRepository;
             _stockRepository = stockRepository;
+            _toolkitRepository = toolkitRepository;
         }
 
         public async Task<PaginatedData<ExternalDataModel>> PaginatedProducts(int pageIndex, int pageSize)
@@ -41,7 +45,7 @@ namespace StockAccounting.Web.Services
 
         public async Task<PaginatedData<ScannedDataModel>> PaginatedScannedData(int pageIndex, int pageSize, int docId)
         {
-            var details = await _scannedRepository.GetScannedDataByIdAsync(docId);
+            var details = await _scannedRepository.GetScannedDataByDocumentIdAsync(docId);
             return PaginatedData<ScannedDataModel>.CreateList(details, pageIndex, pageSize);
         }
 
@@ -69,10 +73,10 @@ namespace StockAccounting.Web.Services
             return PaginatedData<EmployeeDataModel>.CreateList(employees, pageIndex, pageSize);
         }
         
-        public async Task<PaginatedData<ScannedDataModel>> PaginatedEmployeeDetails(int pageIndex, int pageSize, int employeeId)
+        public async Task<PaginatedData<StockDataModel>> PaginatedEmployeeDetails(int pageIndex, int pageSize, int employeeId)
         {
             var details = await _employeeRepository.GetEmployeeDetailsByIdAsync(employeeId);
-            return PaginatedData<ScannedDataModel>.CreateList(details, pageIndex, pageSize);
+            return PaginatedData<StockDataModel>.CreateList(details, pageIndex, pageSize);
         }
 
         public async Task<PaginatedData<StockEmployeesModel>> PaginatedStockDetails(int pageIndex, int pageSize, int stockId)
@@ -80,10 +84,17 @@ namespace StockAccounting.Web.Services
             var stocks = await _stockRepository.GetStockDetailsByIdAsync(stockId);
             return PaginatedData<StockEmployeesModel>.CreateList(stocks, pageIndex, pageSize);
         }
-        //public async Task<PaginatedData<InventoryDataModel>> PaginatedSearchedDocument(int pageIndex, int pageSize, string searchText)
-        //{
-        //    var docs = await _inventoryDataRepository.GetInventoryDataByScannedDataAsync(searchText);
-        //    return PaginatedData<InventoryDataModel>.CreateList(docs, pageIndex, pageSize);
-        //}
+
+        public async Task<PaginatedData<ToolkitModel>> PaginatedToolkits(int pageIndex, int pageSize)
+        {
+            var toolkits = await _toolkitRepository.GetToolkitDataAsync();
+            return PaginatedData<ToolkitModel>.CreateList(toolkits, pageIndex, pageSize);
+        }
+
+        public async Task<PaginatedData<ToolkitModel>> PaginatedSearchedToolkits(int pageIndex, int pageSize, string searchText)
+        {
+            var toolkits = await _toolkitRepository.GetToolkitDataBySearchTextAsync(searchText);
+            return PaginatedData<ToolkitModel>.CreateList(toolkits, pageIndex, pageSize);
+        }
     }
 }

@@ -22,6 +22,7 @@
             var count = enumerable.Count();
 
             var items = enumerable.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
+
             return new PaginatedData<T>(items, count, pageIndex, pageSize);
         }
     }

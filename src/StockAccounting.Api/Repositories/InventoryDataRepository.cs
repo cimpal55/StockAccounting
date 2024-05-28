@@ -1,5 +1,4 @@
 ﻿using LinqToDB;
-using LinqToDB.Common;
 using Serilog;
 using StockAccounting.Api.Repositories.Interfaces;
 using StockAccounting.Core.Data;
@@ -7,8 +6,6 @@ using StockAccounting.Core.Data.DbAccess;
 using StockAccounting.Core.Data.Models.Data;
 using StockAccounting.Core.Data.Models.DataTransferObjects;
 using StockAccounting.Core.Data.Services.Interfaces;
-using System.Collections.ObjectModel;
-using System.Reflection.Metadata.Ecma335;
 
 namespace StockAccounting.Api.Repositories
 {
@@ -16,6 +13,7 @@ namespace StockAccounting.Api.Repositories
     {
         private readonly AppDataConnection _conn;
         private readonly IExternalDataRepository _externalDataRepository;
+        private readonly Core.Data.Repositories.Interfaces.IGenericRepository<ToolkitHistoryModel> _toolkitHistoryRepository;
         private readonly Core.Data.Repositories.Interfaces.IStockDataRepository _stockDataRepository;
         private readonly IConfiguration _configuration;
         private readonly ISmtpEmailService _smtpEmailService;
@@ -24,13 +22,15 @@ namespace StockAccounting.Api.Repositories
             IExternalDataRepository externalDataRepository,
             IConfiguration configuration,
             ISmtpEmailService smtpEmailService,
-            Core.Data.Repositories.Interfaces.IStockDataRepository stockDataRepository)
+            Core.Data.Repositories.Interfaces.IStockDataRepository stockDataRepository,
+            Core.Data.Repositories.Interfaces.IGenericRepository<ToolkitHistoryModel> toolkitHistoryRepository)
         {
             _conn = conn;
             _externalDataRepository = externalDataRepository;
             _configuration = configuration;
             _smtpEmailService = smtpEmailService;
             _stockDataRepository = stockDataRepository;
+            _toolkitHistoryRepository = toolkitHistoryRepository;
         }
         public async Task<List<InventoryDataModel>> GetInventoryData() =>
             await _conn
@@ -80,16 +80,15 @@ namespace StockAccounting.Api.Repositories
                                         .Select(x => x.Code)
                                         .FirstOrDefault();
 
-                var lastNr = _conn.ScannedData.Any() == true ? _conn.ScannedData.Where(x => x.DocumentSerialNumber == employeeCode)
-                                                                                .OrderByDescending(x => x.DocumentNumber)
-                                                                                .Take(1)
-                                                                                .Select(x => x.DocumentNumber)
-                                                                                .FirstOrDefault() + 1
-                                                             : 1;
+                var lastNr = _conn.ScannedData.Where(x => x.DocumentSerialNumber == employeeCode)
+                                              .OrderByDescending(x => x.DocumentNumber)
+                                              .Take(1)
+                                              .Select(x => x.DocumentNumber)
+                                              .FirstOrDefault() + 1 ?? 1;
 
                 var documentSerialNumber = _conn.Employees.Where(x => x.Id == employee)
-                                                                           .Select(x => x.Code)
-                                                                           .FirstOrDefault();
+                                                          .Select(x => x.Code)
+                                                          .FirstOrDefault();
 
                 foreach (var item in data.scannedData)
                 {
@@ -111,6 +110,8 @@ namespace StockAccounting.Api.Repositories
                     var stockEmployeeData = new StockEmployeesModel()
                     {
                         IsSynchronization = isSynchronization,
+                        DocumentSerialNumber = documentSerialNumber,
+                        DocumentNumber = lastNr,
                         ExternalDataId = item.Id,
                         EmployeeId = isSynchronization ? data.inventoryData.Employee2Id : data.inventoryData.Employee1Id,
                         StockTypeId = isSynchronization ? (int)StockTypes.Accepted : (int)StockTypes.Returned,
@@ -121,8 +122,22 @@ namespace StockAccounting.Api.Repositories
                     await _stockDataRepository.InsertStockData(stockEmployeeData);
                 }
 
+                foreach (var item in data.usedToolkitData) 
+                {
+                    var usedToolkit = new ToolkitHistoryModel()
+                    {
+                        EmployeeId = employee,
+                        ToolkitId = item.ToolkitId,
+                        Created = DateTime.Now,
+                    };
+
+                    await _toolkitHistoryRepository.InsertAsync(usedToolkit);
+                }
+
                 await _conn.CommitTransactionAsync();
-                //_smtpEmailService.SendEmail(emailTo, scannedData);
+
+                if (isSynchronization)
+                    _smtpEmailService.SendEmail(emailTo, scannedData);
 
             }
             catch (Exception ex)

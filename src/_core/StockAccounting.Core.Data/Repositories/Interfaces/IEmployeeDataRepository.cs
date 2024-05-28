@@ -8,10 +8,10 @@ namespace StockAccounting.Core.Data.Repositories.Interfaces
 
         Task<IEnumerable<EmployeeDataModel>> GetEmployeesSearchTextAsync(string searchText);
 
-        string GetEmployeeFullNameById(int employeeId);
+        Task<int> GetEmployeeIdByCode(string code);
 
         Task UpdateEmployeeAsync(EmployeeDataModel item);
 
-        Task<IEnumerable<ScannedDataModel>> GetEmployeeDetailsByIdAsync(int id);
+        Task<IEnumerable<StockDataModel>> GetEmployeeDetailsByIdAsync(int id);
     }
 }

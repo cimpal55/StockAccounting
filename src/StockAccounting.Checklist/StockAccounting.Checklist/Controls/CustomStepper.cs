@@ -1,14 +1,17 @@
-﻿using Sextant;
+﻿using DynamicData;
+using Newtonsoft.Json.Converters;
+using Sextant;
 using StockAccounting.Checklist.Extensions;
+using StockAccounting.Checklist.Models.Data;
 using StockAccounting.Checklist.Utility.Models;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace StockAccounting.Checklist.Controls
 {
-    // Current stepper accept only int value.
     public class CustomStepper : StackLayout
     {
         Button PlusBtn;
@@ -18,19 +21,18 @@ namespace StockAccounting.Checklist.Controls
         public static readonly BindableProperty TextProperty =
           BindableProperty.Create(
              propertyName: "Text",
-              returnType: typeof(decimal),
-              declaringType: typeof(CustomStepper),
-              defaultValue: 1m,
-              defaultBindingMode: BindingMode.TwoWay);
+             returnType: typeof(decimal),
+             declaringType: typeof(CustomStepper),
+             defaultValue: 1m,
+             defaultBindingMode: BindingMode.TwoWay);
 
         public static readonly BindableProperty MinimumValueProperty =
-            BindableProperty.Create("MinimumValue", typeof(decimal), typeof(CustomStepper), defaultValue: 1m);
+            BindableProperty.Create("MinimumValue", typeof(decimal), typeof(CustomStepper), defaultValue: 0.1m);
 
         public decimal Text
         {
             get { return (decimal)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); OnPropertyChanged(nameof(Text));
-            }
+            set { SetValue(TextProperty, value); OnPropertyChanged(nameof(Text)); }
         }
 
         public decimal MinimumValue
@@ -57,15 +59,17 @@ namespace StockAccounting.Checklist.Controls
             MinusBtn.Clicked += MinusBtn_Clicked;
             Entry = new Entry
             {
+                
                 PlaceholderColor = Color.Gray,
                 Keyboard = Keyboard.Numeric,          
                 HorizontalTextAlignment = TextAlignment.Center,
                 TextColor = Color.Green,
                 WidthRequest = 65,
-                BackgroundColor = Color.Transparent
+                BackgroundColor = Color.Transparent,
             };
             Entry.SetBinding(Entry.TextProperty, new Binding(nameof(Text), BindingMode.TwoWay, source: this));
             Entry.TextChanged += Entry_TextChanged;
+            Entry.Focused += Entry_Focused;
             Children.Add(MinusBtn);
             Children.Add(Entry);
             Children.Add(PlusBtn);
@@ -75,27 +79,44 @@ namespace StockAccounting.Checklist.Controls
         {
             var entry = (Entry)sender;
             var text = e.NewTextValue;
-            var number = text.Length - text.IndexOf(".") - 1;
+            Match m = Regex.Match(text, "^[0-9]*(\\.[0-9]{0,2})?$");
 
-            if (number > 2 || text.Contains(","))
+            if (!m.Success)
             {
                 string entryText = entry.Text;
                 entryText = entryText.Remove(entryText.Length - 1);
                 entry.Text = entryText;
             }
+            else if(!string.IsNullOrEmpty(text))
+            {
+                if (0 < Convert.ToDecimal(text))
+                    return;
+                else
+                    entry.Text = "0.1";
+            }
         }
 
+        private void Entry_Focused(object sender, EventArgs e)
+        {
+            var entry = (Entry)sender;
+            entry.Text = string.Empty;
+        }
         private void MinusBtn_Clicked(object sender, EventArgs e)
         {
             if (Text > 1)
                 Text--;
-            else if (Text == MinimumValue)
-                Text = MinimumValue;
+            else if (Text <= 0.1m)
+                Text = 0.1m;
+            else
+                Text = Text - 0.1m;
         }
 
         private void PlusBtn_Clicked(object sender, EventArgs e)
         {
-            Text++;
+            if (Text >= 1)
+                Text++;
+            else
+                Text = Text + 0.1m;
         }
 
     }

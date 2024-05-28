@@ -8,7 +8,11 @@ namespace StockAccounting.Core.Data.Repositories.Interfaces
         Task<IEnumerable<ExternalDataModel>> GetExternalDataAsync();
         Task<IEnumerable<ExternalDataModel>> GetExternalDataSearchTextAsync(string searchText);
         ExternalDataModel GetExternalDataById(int externalDataId);
+        Task<int> GetOrCreateExternalDataId(ExternalDataModel model);
         List<ScannedDataModel> GetFinishedListForHtml(List<ScannedDataBaseModel> stocksList);
         Task<IEnumerable<AutocompleteModel>> ExternalAutoComplete();
+        Task<bool> CheckIfExists(string barcode);
+        Task UpdateExternalDataAsync(ExternalDataModel item);
+        Task UpdateExternalDataAsyncByBarcode(ExternalDataModel item);
     }
 }

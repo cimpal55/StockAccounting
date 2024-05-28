@@ -13,6 +13,9 @@ namespace StockAccounting.Core.Data.Models.Data
         [Column("StockName")]
         public string StockName { get; set; } = string.Empty;
 
+        [Column("Barcode")]
+        public string Barcode { get; set; } = string.Empty;
+
         public int ExternalDataId { get; set; }
 
         public bool IsSynchronization { get; set; }

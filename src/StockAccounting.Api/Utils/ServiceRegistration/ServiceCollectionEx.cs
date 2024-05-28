@@ -19,6 +19,7 @@ namespace StockAccounting.Api.Utils.ServiceRegistration
                 .AddScoped<IExternalDataRepository, ExternalDataRepository>()
                 .AddScoped<IEmployeeDataRepository, EmployeeDataRepository>()
                 .AddScoped<IInventoryDataRepository, InventoryDataRepository>()
-                .AddScoped<IScannedDataRepository, ScannedDataRepository>();
+                .AddScoped<IScannedDataRepository, ScannedDataRepository>()
+                .AddScoped<IToolkitDataRepository, ToolkitDataRepository>();
     }
 }

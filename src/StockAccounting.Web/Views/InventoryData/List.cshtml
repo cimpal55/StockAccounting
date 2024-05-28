@@ -23,12 +23,12 @@
         </div>
     </div>
     <div class="fixed-table-container" id="divTable" style="display: none;">
-        <table class="table table-striped" id="inventoryTable">
+        <table class="table" id="inventoryTable">
             <thead>
             <tr>
-                <th>Nodeva</th>
-                <th>Pieņēma</th>
-                <th>Izveidots</th>
+                <th>Returned</th>
+                <th>Took</th>
+                <th>Created</th>
                 <th></th>
             </tr>
             </thead>
@@ -36,7 +36,7 @@
             @{
                 System.Diagnostics.Debug.Assert(Model != null, nameof(Model) + " != null");
                 System.Diagnostics.Debug.Assert(Model.InventoryDataModel != null, "Model.InventoryDataModel != null");
-                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time"); 
+                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
             }
 
             @foreach (var item in Model.InventoryDataModel)
@@ -44,7 +44,7 @@
                 <tr id="data_@item.Id">
                     <td>@item.Employee1</td>
                     <td>@item.Employee2</td>
-                    <td>@TimeZoneInfo.ConvertTimeToUtc(item.Created, tzi)</td>
+                    <td data-order="@item.Created.ToString("MMddyyyyHHmmss")">@item.Created.ToString("dd.MM.yyyy HH:mm")</td>
                     <td align="right">
                         <a class="btn btn-outline-primary" 
                            role="button" 
@@ -58,7 +58,8 @@
                                 data-target="#editInventoryDataModal"
                                 data-id="@item.Id"
                                 data-employee1id="@item.Employee1Id"
-                                data-employee2id="@item.Employee2Id">Edit</button>
+                                data-employee2id="@item.Employee2Id"
+                                data-created="@item.Created.ToString("yyyy-MM-ddThh:mm")">Edit</button>
                         <button type="button"
                                 class="btn btn-danger"
                                 data-toggle="modal"

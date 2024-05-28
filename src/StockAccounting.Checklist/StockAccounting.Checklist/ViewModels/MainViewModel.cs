@@ -1,6 +1,8 @@
 ﻿using Acr.UserDialogs;
 using DynamicData;
 using DynamicData.Binding;
+using StockAccounting.Checklist.Constants;
+using StockAccounting.Checklist.Controls;
 using StockAccounting.Checklist.Enums;
 using StockAccounting.Checklist.Extensions;
 using StockAccounting.Checklist.Models.Data;
@@ -13,9 +15,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
+using Xamarin.KeyboardHelper;
+using static Xamarin.Forms.Internals.GIFBitmap;
 
 namespace StockAccounting.Checklist.ViewModels
 {
@@ -24,34 +29,43 @@ namespace StockAccounting.Checklist.ViewModels
         private readonly IInventoryDataService _inventoryDataService;
         private readonly IEmployeeDataService _employeeDataService;
         private readonly IExternalDataService _externalDataService;
+        private readonly IToolkitDataService _toolkitDataService;
         private ObservableCollection<InventoryDataModel> _inventoryDataList;
         private ObservableCollection<EmployeeDataModel> _employeeDataList;
         private ObservableCollection<ExternalDataModel> _externalDataList;
         private ObservableCollection<ExternalDataModel> _scannedStockDataList;
-        private InventoryDataModel _inventoryModel;
+        private ObservableCollection<ToolkitDataModel> _toolkitDataList;
+        private ObservableCollection<ToolkitHistoryModel> _usedToolkistList;
         private EmployeeDataModel _firstSelectedEmployee;
         private EmployeeDataModel _secondSelectedEmployee;
         private string _barcode;
         private string _firstEmployee;
         private string _secondEmployee;
+        private bool _isKeyboardEnabled;
 
         public MainViewModel(IDialogService dialogService,
             IInventoryDataService inventoryDataService,
             IEmployeeDataService employeeDataService,
-            IExternalDataService externalDataService)
+            IExternalDataService externalDataService,
+            IToolkitDataService toolkitDataService)
             : base(dialogService)
         {
+            _toolkitDataService = toolkitDataService;
             _inventoryDataService = inventoryDataService;
             _employeeDataService = employeeDataService;
             _externalDataService = externalDataService;
 
-            Task.Run(() => this.OnAppearing()).Wait();
+            Task.Run(() => OnAppearing());
         }
 
         public ICommand InsertInventoryDataCommand => new Command(InsertInventoryData);
-        public ICommand InitializeBarcodeScannerCommand => new Command<BarcodeScannerMode>(InitializeBarcodeScanner);
+        public ICommand InitializeBarcodeScannerCommand => new Command<BarcodeScannerMode>(async(o) => await InitializeBarcodeScannerAsync(o));
         public ICommand ButtonCommand => new Command<object>(OpenPickerPopup);
         public ICommand DeleteRowCommand => new Command(DeleteRowAsync);
+        public ICommand DeleteAllRowsCommand => new Command(DeleteAllRowsAsync);
+        public ICommand SynchronizingDataCommand => new Command(SynchronizingData);
+        public ICommand ChangeKeyboardVisibilityCommand => new Command<object>(ChangeKeyboardVisibility);
+
 
         //public ICommand InitializeScannerCommand => new Command<BarcodeScannerMode>(InitializeScanner);
         public ObservableCollection<InventoryDataModel> InventoryDataList
@@ -83,6 +97,16 @@ namespace StockAccounting.Checklist.ViewModels
             }
         }
 
+        public ObservableCollection<ToolkitDataModel> ToolkitDataList
+        {
+            get => _toolkitDataList;
+            set
+            {
+                _toolkitDataList = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ObservableCollection<ExternalDataModel> ScannedStockDataList
         {
             get => _scannedStockDataList;
@@ -92,24 +116,17 @@ namespace StockAccounting.Checklist.ViewModels
                 OnPropertyChanged();
             }
         }
-        public ObservableCollection<ExternalDataModel> ShownScannedDataList
+
+        public ObservableCollection<ToolkitHistoryModel> UsedToolkitList
         {
-            get
-            {
-                if (ScannedStockDataList.Any())
-                    return ScannedStockDataList;
-                return null;
-            }
-        }
-        public InventoryDataModel InventoryModel
-        {
-            get => _inventoryModel;
+            get => _usedToolkistList;
             set
             {
-                _inventoryModel = value;
+                _usedToolkistList = value;
                 OnPropertyChanged();
             }
         }
+
         public EmployeeDataModel FirstSelectedEmployee
         {
             get => _firstSelectedEmployee;
@@ -133,6 +150,7 @@ namespace StockAccounting.Checklist.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public EmployeeDataModel SecondSelectedEmployee
         {
             get => _secondSelectedEmployee;
@@ -156,6 +174,7 @@ namespace StockAccounting.Checklist.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public string Barcode
         {
             get => _barcode;
@@ -164,12 +183,12 @@ namespace StockAccounting.Checklist.ViewModels
                 _barcode = value;
                 if (value.Length == 13)
                 {
-                    
-                    InitializeBarcodeScanner(BarcodeScannerMode.Inventory);
+                    InitializeBarcodeScannerAsync(BarcodeScannerMode.Inventory);
                 }
                 OnPropertyChanged();
             }
         }
+
         public string FirstEmployee
         {
             get => _firstEmployee;
@@ -179,6 +198,7 @@ namespace StockAccounting.Checklist.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public string SecondEmployee
         {
             get => _secondEmployee;
@@ -189,31 +209,65 @@ namespace StockAccounting.Checklist.ViewModels
             }
         }
 
-        public async Task OnAppearing()
+        public bool IsKeyboardEnabled
         {
-            var employees = await GetEmployeeData();
-            foreach (var item in employees)
+            get => _isKeyboardEnabled;
+            set
             {
-                item.FullName = string.Join(" ", item.Name, item.Surname, item.Code);
+                _isKeyboardEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public void OnAppearing()
+        {
+            UserDialogs.Instance.ShowLoading("Loading");
+
+            if (!CheckConnection(ApiConstants.BaseApiUrl))
+            {
+                UserDialogs.Instance.HideLoading();
+                UserDialogs.Instance.Toast(new ToastConfig("Error! Please check internet connection!").SetBackgroundColor(Color.Red));
+                return;
             }
 
-            EmployeeDataList = employees.OrderBy(x => x.Name).ToObservableCollection();
-            ExternalDataList = await GetExternalData();
-
+            EmployeeDataList = Preferences.EmployeeDataList;
+            ExternalDataList = Preferences.ExternalDataList;
+            ToolkitDataList = Preferences.ToolkitDataList;
             ScannedStockDataList = Preferences.ScannedStockDataList == null ? ScannedStockDataList = new ObservableCollection<ExternalDataModel>()
                                                                             : ScannedStockDataList = Preferences.ScannedStockDataList;
+
+            UsedToolkitList = Preferences.ToolkitHistoryList == null ? UsedToolkitList = new ObservableCollection<ToolkitHistoryModel>()
+                                                                     : Preferences.ToolkitHistoryList;
+
+
             FirstSelectedEmployee = Preferences.FirstSelectedEmployee;
             SecondSelectedEmployee = Preferences.SecondSelectedEmployee;
+
+            UserDialogs.Instance.HideLoading();
         }
+
         private async Task<ObservableCollection<EmployeeDataModel>> GetEmployeeData() => await _employeeDataService.GetEmployeeDataAsync();
         private async Task<ObservableCollection<ExternalDataModel>> GetExternalData() => await _externalDataService.GetExternalDataAsync();
+        private async Task<ObservableCollection<ToolkitDataModel>> GetToolkitData() => await _toolkitDataService.GetToolkitDataAsync();
+
+        public bool CheckConnection(string ip)
+        {
+            var pingSender = new Ping();
+            var reply = pingSender.Send(ip);
+
+            return reply == null || reply.Status == IPStatus.Success;
+        }
+
         private async void InsertInventoryData()
         {
-            if(FirstSelectedEmployee != null && SecondSelectedEmployee != null && ScannedStockDataList.Any())
+            Device.BeginInvokeOnMainThread(() => UserDialogs.Instance.ShowLoading("Inserting data..."));
+
+            if (FirstSelectedEmployee != null && SecondSelectedEmployee != null && ScannedStockDataList.Any())
             {
                 if (ScannedStockDataList.Any(x => x.Quantity == 0) || ScannedStockDataList.Any(x => x.Quantity.Equals(null)))
                 {
                     UserDialogs.Instance.Alert("Scanned data quantity can't be 0.", "Error", "OK");
+                    UserDialogs.Instance.HideLoading();
                     return;
                 }
 
@@ -226,24 +280,27 @@ namespace StockAccounting.Checklist.ViewModels
                 var data = new ScannedModel
                 {
                     inventoryData = inventoryModel,
-                    scannedData = ScannedStockDataList
+                    scannedData = ScannedStockDataList,
+                    usedToolkitData = UsedToolkitList,
                 };
 
                 try
                 {
                     await _inventoryDataService.InsertInventoryData(data);
                     CleanData();
-                    await _dialogService.ShowDialog("Data inserted successfully", "Success", "OK");
+                    UserDialogs.Instance.Alert("Data inserted successfully", "Success", "OK");
                 }
                 catch (Exception e)
                 {
-                    await _dialogService.ShowDialog(e.ToString(), "Error", "OK");
+                    UserDialogs.Instance.Alert(e.Message, "Error", "OK");
                 }
             }
             else
+            {
                 UserDialogs.Instance.Alert("Missing some information", "Error", "OK");
+            }
 
-
+            Device.BeginInvokeOnMainThread(() => UserDialogs.Instance.HideLoading());
         }
 
         // Camera scanner
@@ -293,7 +350,8 @@ namespace StockAccounting.Checklist.ViewModels
         //    }
         //}
 
-        private void InitializeBarcodeScanner(BarcodeScannerMode mode)
+
+        private async Task InitializeBarcodeScannerAsync(BarcodeScannerMode mode)
         {
             EmployeeDataModel firstEmployee;
             EmployeeDataModel secondEmployee;
@@ -302,6 +360,7 @@ namespace StockAccounting.Checklist.ViewModels
                 case BarcodeScannerMode.First:                 
                     try
                     {
+                        
                         firstEmployee = EmployeeDataList.First(x => x.Code == FirstEmployee);
                         FirstSelectedEmployee = firstEmployee; 
                     }
@@ -326,39 +385,78 @@ namespace StockAccounting.Checklist.ViewModels
                     break;
 
                 case BarcodeScannerMode.Inventory:
-                    ScanningData();
+                    await ScanningDataAsync();
                     Preferences.ScannedStockDataList = ScannedStockDataList;
+                    Preferences.ToolkitHistoryList = UsedToolkitList;
                     break;
             }
         }
-        private void ScanningData()
+        private async Task ScanningDataAsync()
         {
             try
             {
-                var stock = ExternalDataList.First(x => x.Barcode == Barcode);
-                if (!ScannedStockDataList.Any(x => x.Barcode == Barcode))
+                if (!ToolkitDataList.Any(x => x.Barcode == Barcode))
                 {
-                    stock.Quantity = 1;
-                    stock.Created = DateTime.Now;
-                    stock.Updated = DateTime.Now;
-                    ScannedStockDataList.Add(stock);
-                    foreach (var item in ShownScannedDataList)
+                    var stock = ExternalDataList.First(x => x.Barcode == Barcode);
+
+                    if (!ScannedStockDataList.Any(x => x.Barcode == Barcode))
                     {
-                        item.FullName = item.Name + "\n" + "(" + item.Unit + ")";
+                        stock.Quantity = 1;
+                        stock.Created = DateTime.Now;
+                        stock.Updated = DateTime.Now;
+                        ScannedStockDataList.Add(stock);
+                        IsKeyboardEnabled = false;
                     }
-                    OnPropertyChanged("ShownScannedDataList");
+                    else
+                    {
+                        var device = ScannedStockDataList.Where(x => x.Barcode == Barcode).FirstOrDefault();
+                        var newDevice = device;
+                        if (string.IsNullOrEmpty(Convert.ToString(newDevice.Quantity)))
+                            newDevice.Quantity = 0.1m;
+                        newDevice.Quantity++;
+                        newDevice.Updated = DateTime.Now;
+                        ScannedStockDataList.Replace(device, newDevice);
+                        IsKeyboardEnabled = false;
+                    }
                 }
                 else
                 {
-                    var device = ScannedStockDataList.Where(x => x.Barcode == Barcode).FirstOrDefault();
-                    var newDevice = device;
-                    if (string.IsNullOrEmpty(Convert.ToString(newDevice.Quantity)))
-                        newDevice.Quantity = 0.001m;
-                    newDevice.Quantity++;
-                    newDevice.Updated = DateTime.Now;
-                    ScannedStockDataList.Replace(device, newDevice);
-                    OnPropertyChanged("ShownScannedDataList");
+                    Device.BeginInvokeOnMainThread(() => UserDialogs.Instance.ShowLoading("Inserting toolkit..."));
+                    var toolkit = ToolkitDataList.FirstOrDefault(x => x.Barcode == Barcode);
+                    var toolkitExternal = await _toolkitDataService.GetToolkitExternalData(toolkit.Id);
+                    ExternalDataModel external = new ExternalDataModel();
+                    foreach (var item in toolkitExternal)
+                    {
+                        external = ExternalDataList.First(x => x.Id == item.ExternalDataId);
+                        if(!ScannedStockDataList.Any(x => x.Barcode == external.Barcode))
+                        {
+                            external.Quantity = item.Quantity;
+                            external.Created = DateTime.Now;
+                            external.Updated = DateTime.Now;
+                            ScannedStockDataList.Add(external);
+                        }
+                        else
+                        {
+                            var device = ScannedStockDataList.Where(x => x.Barcode == external.Barcode).FirstOrDefault();
+                            var newDevice = device;
+                            if (string.IsNullOrEmpty(Convert.ToString(newDevice.Quantity)))
+                                newDevice.Quantity = 0.1m;
+                            newDevice.Quantity++;
+                            newDevice.Updated = DateTime.Now;
+                            ScannedStockDataList.Replace(device, newDevice);
+                        }
+                    }
+
+                    ToolkitHistoryModel usedToolkit = new ToolkitHistoryModel
+                    {
+                        ToolkitId = toolkit.Id,
+                    };
+
+                    UsedToolkitList.Add(usedToolkit);
+                    Device.BeginInvokeOnMainThread(() => UserDialogs.Instance.HideLoading());
                 }
+
+                ScannedStockDataList.Sort(x => x.Updated);
             }
             catch
             {
@@ -367,18 +465,23 @@ namespace StockAccounting.Checklist.ViewModels
 
             Barcode = string.Empty;
         }
+
         private void CleanData()
         {
             FirstSelectedEmployee = null;
             SecondSelectedEmployee = null;
             FirstEmployee = null;
             SecondEmployee = null;
-            ScannedStockDataList.Clear();
+
+            ScannedStockDataList = new ObservableCollection<ExternalDataModel>();
+            UsedToolkitList = new ObservableCollection<ToolkitHistoryModel>();
+            
             Preferences.ScannedStockDataList = ScannedStockDataList;
+            Preferences.ToolkitHistoryList = UsedToolkitList;
             Preferences.FirstSelectedEmployee = null;
             Preferences.SecondSelectedEmployee = null;
-            OnPropertyChanged("ShownScannedDataList");
         }
+
         private void OpenPickerPopup(object obj)
         {
             var view = obj as Picker;
@@ -392,7 +495,62 @@ namespace StockAccounting.Checklist.ViewModels
                 return;
             var row = obj as ExternalDataModel;
             ScannedStockDataList.Remove(row);
-            OnPropertyChanged("ShownScannedDataList");
+            Preferences.ScannedStockDataList = ScannedStockDataList;
+        }
+
+        private async void DeleteAllRowsAsync()
+        {
+            var answer = await UserDialogs.Instance.ConfirmAsync("Are you sure?", null, "Yes", "No");
+            if (!answer)
+                return;
+            ScannedStockDataList.Clear();
+            Preferences.ScannedStockDataList = ScannedStockDataList;
+        }
+
+        private async void SynchronizingData()
+        {
+            UserDialogs.Instance.ShowLoading("Loading");
+            await Task.Delay(100);
+
+            try
+            {
+                if (!CheckConnection(ApiConstants.BaseApiUrl))
+                {
+                    UserDialogs.Instance.HideLoading();
+                    UserDialogs.Instance.Toast(new ToastConfig("Error! Please check internet connection!").SetBackgroundColor(Color.Red));
+                    return;
+                }
+
+                var employees = await GetEmployeeData();
+                EmployeeDataList = employees.OrderBy(x => x.Code).ToObservableCollection();
+                ExternalDataList = await GetExternalData();
+                ToolkitDataList = await GetToolkitData();
+
+                Preferences.ExternalDataList = ExternalDataList;
+                Preferences.ToolkitDataList = ToolkitDataList;
+                Preferences.EmployeeDataList = EmployeeDataList;
+
+                UserDialogs.Instance.HideLoading();
+                UserDialogs.Instance.Toast(new ToastConfig("Synchronization was successful!").SetBackgroundColor(Color.Green));
+            }
+            catch (Exception ex)
+            {
+                UserDialogs.Instance.HideLoading();
+                UserDialogs.Instance.Toast(new ToastConfig("Error! Synchronization failed!").SetBackgroundColor(Color.Red));
+                throw new Exception(ex.Message);
+            }
+        }
+
+        private void ChangeKeyboardVisibility(object obj)
+        {
+            if (IsKeyboardEnabled)
+                IsKeyboardEnabled = false;
+            else
+            {
+                IsKeyboardEnabled = true;
+                var entry = obj as Entry;
+                entry.Focus();
+            }
         }
     }
 }

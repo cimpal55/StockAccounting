@@ -4,9 +4,11 @@ using Android.Runtime;
 using Android.OS;
 using Acr.UserDialogs;
 using System.Net;
+using Xamarin.Forms;
 
 namespace StockAccounting.Checklist.Droid
 {
+
     [Activity(Label = "StockAccounting.Checklist", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
@@ -15,11 +17,13 @@ namespace StockAccounting.Checklist.Droid
             base.OnCreate(savedInstanceState);
             UserDialogs.Init(this);
             ServicePointManager.ServerCertificateValidationCallback += (o, cert, chain, errors) => true;
+            Forms.SetFlags("FastRenderers_Experimental");
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-            ZXing.Net.Mobile.Forms.Android.Platform.Init();
-            ZXing.Mobile.MobileBarcodeScanner.Initialize(Application);
-            global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            //ZXing.Net.Mobile.Forms.Android.Platform.Init();
+            //ZXing.Mobile.MobileBarcodeScanner.Initialize(Application);
+            Xamarin.KeyboardHelper.Platform.Droid.Effects.Init(this);
+            Forms.Init(this, savedInstanceState);
             LoadApplication(new App());
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)

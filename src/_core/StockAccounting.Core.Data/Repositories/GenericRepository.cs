@@ -17,6 +17,11 @@ namespace StockAccounting.Core.Data.Repositories
                 .InsertWithInt32IdentityAsync(obj)
                 .ConfigureAwait(false);
 
+        public async Task InsertOrUpdateAsync(T obj) =>
+            await _conn
+                .InsertOrReplaceAsync(obj) 
+                .ConfigureAwait(false);
+
         public async Task UpdateAsync(T obj) =>
             await _conn
                 .UpdateAsync(obj)

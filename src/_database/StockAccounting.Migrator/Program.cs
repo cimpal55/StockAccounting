@@ -4,7 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols;
 using System.Configuration;
-using StockAccounting.Migrations;
+using StockAccounting.Migrations.Migrations;
 
 var serviceProvider = CreateServices();
 

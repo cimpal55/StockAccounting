@@ -1,17 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OfficeOpenXml.DataValidation.Formulas.Contracts;
-using StockAccounting.Core.Data.Models.Data;
-using StockAccounting.Core.Data.Models.DataTransferObjects;
 using StockAccounting.Core.Data.Repositories.Interfaces;
-using StockAccounting.Web.Models.Data;
 using StockAccounting.Web.Extensions;
-using StockAccounting.Web.Services;
 using StockAccounting.Web.Services.Interfaces;
-using StockAccounting.Web.Utils;
 using StockAccounting.Web.ViewModels;
-using System.IO.Compression;
-using System.Net.Http.Headers;
-using System.Linq.Expressions;
 using StockAccounting.Web.Constants;
 using StockAccounting.Core.Data;
 
@@ -22,6 +13,8 @@ namespace StockAccounting.Web.Controllers
         private readonly IEmployeeDataRepository _repository;
         private readonly IPaginationService _paginationService;
         private readonly IFileExportService _fileExportService;
+        private new int _itemsPerPage = 100;
+
         public EmployeeDataController
             (IEmployeeDataRepository employeeRepository,
             IPaginationService paginationService,
@@ -55,9 +48,9 @@ namespace StockAccounting.Web.Controllers
 
             var items = await _paginationService.PaginatedEmployeeDetails(pageId, _itemsPerPage, id);
 
-            var data = new ScannedDataViewModel
+            var data = new StockDataViewModel
             {
-                ScannedDataModel = items,
+                StockDataModel = items,
                 TotalPages = items.TotalPages,
                 PageIndex = items.PageIndex,
                 TotalData = items.TotalData,

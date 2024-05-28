@@ -47,6 +47,11 @@ $(function () {
                     ajax: {},
                     dataAdapter: CustomData,
                 });
+
+                $("#externalDataId").select2({
+                    ajax: {},
+                    dataAdapter: CustomData,
+                });
             });
         })
 });
@@ -88,10 +93,10 @@ $('#editScannedDataModal').on('show.bs.modal',
         var quantity = button.data('quantity');
 
         var modal = $(this);
-        modal.find('#id').val(id);
-        modal.find('#inventoryDataId').val(inventoryDataId);
-        modal.find('#externalDataId').val(externalDataId);
-        modal.find('#quantity').val(quantity);
+        modal.find('#Id').val(id);
+        modal.find('#InventoryDataId').val(inventoryDataId);
+        modal.find('#UpdateExternalData').val(externalDataId);
+        modal.find('#UpdateQuantity').val(quantity);
 
         $("#scannedDataModalComplete").submit(function () {
 

@@ -19,9 +19,9 @@
                 </a>
 
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                    <a class="dropdown-item" href="#" value="@FileExport.Taken">Parts taken by the employee</a>
-                    <a class="dropdown-item" href="#" value="@FileExport.Returned">Parts returned by the employee</a>
-                    <a class="dropdown-item" href="#" value="@FileExport.Default">Parts currently remaining with the employee</a>
+                    <a class="dropdown-item employeeExcel" href="#" value="@FileExport.Taken">Parts taken by the employee</a>
+                    <a class="dropdown-item employeeExcel" href="#" value="@FileExport.Returned">Parts returned by the employee</a>
+                    <a class="dropdown-item employeeExcel" href="#" value="@FileExport.Default">Parts currently remaining with the employee</a>
                 </div>
             </div>
         </div>
@@ -38,14 +38,14 @@
     </div>
 
     <div class="fixed-table-container" id="divTable" style="display: none;">
-        <table class="table table-striped" id="employeeTable">
+        <table class="table" id="employeeTable">
             <thead>
             <tr>
                 <th><input name="checkbox" type="checkbox" id="checkBoxAll" class="custom-checkbox"/></th>
-                <th>Vārds</th>
-                <th>Uzvārds</th>
-                <th>Kods</th>
-                <th>E-pasts</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Code</th>
+                <th>Email</th>
                 <th></th>
             </tr>
             </thead>

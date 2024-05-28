@@ -10,5 +10,7 @@ namespace StockAccounting.Checklist.Models.Data.DataTransferObjects
         public InventoryDataModel inventoryData { get; set; }
 
         public ObservableCollection<ExternalDataModel> scannedData { get; set; }
+
+        public ObservableCollection<ToolkitHistoryModel> usedToolkitData { get; set; }
     }
 }

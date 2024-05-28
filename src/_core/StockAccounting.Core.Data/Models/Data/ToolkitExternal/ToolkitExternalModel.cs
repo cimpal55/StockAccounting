@@ -1,0 +1,9 @@
+﻿namespace StockAccounting.Core.Data.Models.Data
+{
+    public record ToolkitExternalModel : ToolkitExternalBaseModel
+    {
+        public string ExternalDataName { get; set; } = string.Empty;
+
+        public string FormQuantity { get; set; } = string.Empty; 
+    }
+}

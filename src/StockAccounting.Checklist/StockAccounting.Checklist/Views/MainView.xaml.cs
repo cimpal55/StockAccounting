@@ -1,4 +1,5 @@
-﻿using StockAccounting.Checklist.Bootstrap;
+﻿using Acr.UserDialogs;
+using StockAccounting.Checklist.Bootstrap;
 using StockAccounting.Checklist.ViewModels;
 using System.Threading.Tasks;
 using Xamarin.Forms;
@@ -17,9 +18,11 @@ namespace StockAccounting.Checklist.Views
         }
         protected override async void OnAppearing()
         {
-            mainViewModel = AppContainer.Resolve<MainViewModel>();
+            AppContainer.Resolve<MainViewModel>();
 
-            await Task.Delay(300);
+            //mainViewModel.OnAppearing();
+
+            await Task.Delay(10);
 
             firstEmployee.Focus();
         }

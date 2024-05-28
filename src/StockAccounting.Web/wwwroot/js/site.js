@@ -8,3 +8,8 @@ window.setTimeout(function () {
         $(this).remove();
     });
 }, 3000);
+
+$(document).ready(function () {
+    $('a[href$="' + location.pathname + '"]').removeClass('collapsed');
+});
+

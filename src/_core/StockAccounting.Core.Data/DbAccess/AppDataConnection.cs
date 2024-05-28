@@ -15,6 +15,9 @@ namespace StockAccounting.Core.Data.DbAccess
         public ITable<ScannedDataBaseModel> ScannedData => this.GetTable<ScannedDataBaseModel>();
         public ITable<StockDataBaseModel> StockData => this.GetTable<StockDataBaseModel>();
         public ITable<StockEmployeesBaseModel> StockEmployees => this.GetTable<StockEmployeesBaseModel>();
+        public ITable<ToolkitModel> Toolkits => this.GetTable<ToolkitModel>();
+        public ITable<ToolkitExternalModel> ToolkitExternal => this.GetTable<ToolkitExternalModel>();
+        public ITable<UnitModel> Units => this.GetTable<UnitModel>();
 
     }
 }

@@ -69,11 +69,14 @@
         public static class StockEmployees
         {
             public const string Id = "ID";
+            public const string DocumentSerialNumber = "DocumentSerialNumber";
+            public const string DocumentNumber = "DocumentNumber";
             public const string StockDataId = "StockDataID";
             public const string EmployeeId = "EmployeeID";
             public const string StockTypeId = "StockTypeID";
             public const string Quantity = "Quantity";
             public const string Created = "Created";
+            public const string LastSynchronization = "LastSynchronization";
         }
 
         public static class StockData
@@ -82,6 +85,36 @@
             public const string ExternalDataId = "ExternalDataID";
             public const string Quantity = "Quantity";
             public const string LastSynchronization = "LastSynchronization";
+            public const string Created = "Created";
+        }
+
+        public static class Toolkit
+        {
+            public const string Id = "ID";
+            public const string Name = "Name";
+            public const string Description = "Description";
+            public const string TotalQuantity = "TotalQuantity";
+            public const string Barcode = "Barcode";
+            public const string IsDeleted = "IsDeleted";
+            public const string Created = "Created";
+            public const string Updated = "Updated";
+        }
+
+        public static class ToolkitExternal
+        {
+            public const string Id = "ID";
+            public const string ToolkitId = "ToolkitId";
+            public const string ExternalDataId = "ExternalDataId";
+            public const string Quantity = "Quantity";
+            public const string Created = "Created";
+            public const string Updated = "Updated";
+        }
+
+        public static class ToolkitHistory
+        {
+            public const string Id = "ID";
+            public const string ToolkitId = "ToolkitId";
+            public const string EmployeeId = "EmployeeId";
             public const string Created = "Created";
         }
     }

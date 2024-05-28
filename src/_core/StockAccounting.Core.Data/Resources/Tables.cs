@@ -10,5 +10,8 @@
         public const string InventoryData = "TBL_InventoryData";
         public const string StockEmployees = "TBL_Stock_Employees";
         public const string StockData = "TBL_StockData";
+        public const string Toolkits = "TBL_Toolkits";
+        public const string ToolkitExternal = "TBL_Toolkit_ExternalData";
+        public const string ToolkitHistory = "TBL_ToolkitHistory";
     }
 }

@@ -12,9 +12,103 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"  />
 
+    <!-- Favicons -->
+    <link href="~/Admin/assets/img/folder.png" rel="icon">
+    <link href="~/Admin/assets/img/folder.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <link href="~/Admin/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="~/Admin/assets/css/style.css" rel="stylesheet">
+
 </head>
 <body>
-    <header>
+    <!-- ======= Header ======= -->
+    <header id="header" class="header fixed-top d-flex align-items-center pe-4">
+
+        <div class="d-flex align-items-center justify-content-between">
+            <a asp-controller="ExternalData" asp-action="List" class="logo d-flex align-items-center">
+                <img src="~/Admin/assets/img/folder.png" alt="Admin Panel">
+                <span class="d-none d-lg-block">StockAccounting</span>
+            </a>
+            <i class="bi bi-list toggle-sidebar-btn"></i>
+
+        </div><!-- End Logo -->
+
+        <nav class="header-nav ms-auto btn btn-dark">
+            <ul class="d-flex align-items-center">
+                <li class ="nav-item dropdown">
+                    <a class="admin-button nav-link dropdown-toggle pe-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="Administration">Administration</a>
+                    <div class="dropdown-menu" aria-labelledby="Administration">
+                        <a class="dropdown-item btn btn-outline-dark" asp-controller="ToolkitData" asp-action="List">Toolkits</a>
+                    </div>
+                </li>
+            </ul>
+        </nav><!-- End Icons Navigation -->
+
+    </header><!-- End Header -->
+    <!-- ======= Sidebar ======= -->
+    <aside id="sidebar" class="sidebar">
+
+        <ul class="sidebar-nav" id="sidebar-nav">
+            <li class="nav-item">
+                <a class="nav-link collapsed" asp-controller="ExternalData" asp-action="List">
+                    <i class="bi bi-grid"></i>
+                    <span>Details</span>
+                </a>
+            </li><!-- End Dashboard Nav -->
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" asp-controller="InventoryData" asp-action="List">
+                    <i class="bi bi-building-fill"></i>
+                    <span>Documents</span>
+                </a>
+            </li><!-- End About Section -->
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" asp-controller="EmployeeData" asp-action="List">
+                    <i class="bi bi-house"></i>
+                    <span>Employees</span>
+                </a>
+            </li><!-- End Hone Page Section -->
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" asp-controller="StockData" asp-action="List">
+                    <i class="bi bi-sliders2-vertical"></i>
+                    <span>Stocks</span>
+                </a>
+            </li><!-- End Hone Page Section -->
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" asp-controller="Dashboard">
+                    <i class="bi bi-grid"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li><!-- End Dashboard Nav -->
+        </ul>
+
+    </aside><!-- End Sidebar-->
+
+    <main id="main" class="main">
+
+        @RenderBody()
+
+    </main><!-- End #main -->
+
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+@*     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark border-bottom box-shadow mb-3" style="background-color:#2d4772">
             <div><h2 class="text-danger"></h2></div>
             <div class="container">
@@ -42,11 +136,9 @@
 
                     <ul class="navbar-nav">
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle
-                               @Html.IsSelected(actions: "List", controllers: "Employee")"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="Administration">Administration</a>
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="Administration">Administration</a>
                             <div class="dropdown-menu" aria-labelledby="Administration">
-                                <a class="dropdown-item" asp-controller="EmployeeData" asp-action="List">Employees</a>
+                                <a class="dropdown-item" asp-controller="ToolkitData" asp-action="List">Toolkits</a>
                             </div>
                         </li>
                     </ul>
@@ -59,7 +151,7 @@
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
-    </div>
+    </div> *@
 
     <footer class="border-top footer text-muted">
         <div class="container-fluid">
@@ -80,6 +172,19 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.5/lodash.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Vendor JS Files -->
+    <script src="~/Admin/assets/vendor/apexcharts/apexcharts.min.js"></script>
+    <script src="~/Admin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Admin/assets/vendor/chart.js/chart.umd.js"></script>
+    <script src="~/Admin/assets/vendor/echarts/echarts.min.js"></script>
+    <script src="~/Admin/assets/vendor/quill/quill.min.js"></script>
+    <script src="~/Admin/assets/vendor/simple-datatables/simple-datatables.js"></script>
+    <script src="~/Admin/assets/vendor/tinymce/tinymce.min.js"></script>
+    <script src="~/Admin/assets/vendor/php-email-form/validate.js"></script>
+
+    <!-- Template Main JS File -->
+    <script src="~/Admin/assets/js/main.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

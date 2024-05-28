@@ -20,8 +20,10 @@ namespace StockAccounting.Checklist.Models.Data
         [JsonPropertyName("code")]
         public string Code { get; set; } = string.Empty;
 
-        [JsonPropertyName("fullname")]
-        public string FullName { get; set; } = string.Empty;
+        public string FullName
+        {
+            get { return string.Format("{0} {1} {2}", Name, Surname, Code); }
+        }
 
     }
 }

@@ -1,4 +1,5 @@
-﻿@model ScannedDataViewModel
+﻿@using System.Globalization
+@model ScannedDataViewModel
 @{
     ViewData["Title"] = "ScannedData";
 }
@@ -22,9 +23,10 @@
     </div>
 
     <div class="fixed-table-container">
-        <table class="table table-striped">
+        <table class="table">
             <thead>
             <tr>
+                <th>Document Number</th>
                 <th>Stock name</th>
                 <th>Item number</th>
                 <th>Plucode</th>
@@ -40,10 +42,18 @@
             @foreach (var item in Model.ScannedDataModel)
             {
                 <tr id="data_@item.Id">
-                    <td>@item.Name</td>
+                    @if (item.DocumentNumber != null)
+                    {
+                        <td>@string.Join("", string.Format("{0:000}", item.DocumentNumber), item.DocumentSerialNumber)</td>
+                    }
+                    else
+                    {
+                        <td>@item.DocumentSerialNumber</td>
+                    }
+                    <td style="max-width: 300px;">@item.Name</td>
                     <td>@item.ItemNumber</td>
                     <td>@item.PluCode</td>
-                    <td>@item.Quantity</td>
+                    <td>@String.Format(CultureInfo.InvariantCulture, "{0:0.00}", item.Quantity)</td>
                     <td align="right">
                         <button type="button"
                                 class="btn btn-warning"

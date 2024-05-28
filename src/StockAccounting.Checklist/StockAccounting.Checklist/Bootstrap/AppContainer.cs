@@ -24,6 +24,7 @@ namespace StockAccounting.Checklist.Bootstrap
             builder.RegisterType<InventoryDataService>().As<IInventoryDataService>();
             builder.RegisterType<ExternalDataService>().As<IExternalDataService>();
             builder.RegisterType<EmployeeDataService>().As<IEmployeeDataService>();
+            builder.RegisterType<ToolkitDataService>().As<IToolkitDataService>();
 
             //services - general
 

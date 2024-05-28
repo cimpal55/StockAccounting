@@ -20,7 +20,7 @@ namespace StockAccounting.Checklist.Services
         }
         public async Task<ObservableCollection<InventoryDataModel>> GetInventoryDataAsync()
         {
-            UriBuilder uriBuilder = new UriBuilder(ApiConstants.BaseApiUrl)
+            UriBuilder uriBuilder = new UriBuilder(ApiConstants.ApiUrl)
             {
                 Path = ApiConstants.InventoryData
             };
@@ -32,7 +32,7 @@ namespace StockAccounting.Checklist.Services
 
         public async Task<ScannedModel> InsertInventoryData(ScannedModel data)
         {
-            UriBuilder uriBuilder = new UriBuilder(ApiConstants.BaseApiUrl)
+            UriBuilder uriBuilder = new UriBuilder(ApiConstants.ApiUrl)
             {
                 Path = ApiConstants.InventoryDataInsert
             };

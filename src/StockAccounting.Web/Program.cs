@@ -1,20 +1,36 @@
 using LinqToDB;
 using LinqToDB.AspNet;
 using LinqToDB.AspNet.Logging;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using NToastNotify;
+using Serilog;
 using StockAccounting.Core.Data.DbAccess;
 using StockAccounting.Web.Utils.ServiceRegistration;
+using System.Web.Mvc;
+using Newtonsoft.Json.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-builder.Services.AddControllersWithViews().AddNToastNotifyToastr(new ToastrOptions
-{
-    ProgressBar = true,
-    TimeOut = 5000
-});
+builder.Services.AddControllersWithViews()
+    .AddNToastNotifyToastr(new ToastrOptions
+    {
+        ProgressBar = true,
+        TimeOut = 5000
+    })
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.Converters.Add(new StringEnumConverter());
+    });
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File($"Logs/log.txt")
+.CreateLogger();
 
 builder.Services.AddLinqToDBContext<AppDataConnection>((provider, options) =>
 {
@@ -27,6 +43,7 @@ builder.Services.AddLinqToDBContext<AppDataConnection>((provider, options) =>
 });
 
 builder.Services.AddStockAccountingServices();
+
 
 var app = builder.Build();
 
@@ -42,6 +59,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
 
 app.UseAuthorization();
 

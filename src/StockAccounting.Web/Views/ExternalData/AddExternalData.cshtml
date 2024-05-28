@@ -1,0 +1,58 @@
+﻿@model ExternalDataViewModel
+
+<div id="newExternalDataModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form asp-action="InsertExternalData" asp-controller="ExternalData" data-ajax-method="POST" data-ajax="true" data-ajax-complete="externalDataModalComplete">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add new external data</h5>
+                </div>
+                <div class="modal-body" id="externalDataModalDetails">
+                    <div class="form-group">
+                        <label asp-for="Name" class="control-label"><b>Name</b></label>
+                        <input asp-for="Name" class="form-control" type="text" name="Name" required />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Barcode" class="control-label"><b>Barcode</b></label>
+                        <input asp-for="Barcode" class="form-control" type="number" name="Barcode" required />
+                        <span asp-validation-for="Barcode" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ItemNumber" class="control-label"><b>Item number</b></label>
+                        <input asp-for="ItemNumber" class="form-control" type="number" name="ItemNumber" required />
+                        <span asp-validation-for="ItemNumber" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PluCode" class="control-label"><b>PluCode</b></label>
+                        <input asp-for="PluCode" class="form-control" type="text" name="PluCode" required />
+                        <span asp-validation-for="PluCode" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <input type="hidden" asp-for="Id" value="@Model.Id" />
+                        <label class="control-label"><b>Units</b></label>
+                        <select id="selectUnits" asp-for="UnitName" class="form-control" style="width: 100%;" required>
+                            <option value="0" selected="selected">-Choose-</option>
+                            @if (Model is { UnitDataModel: { } })
+                            {
+                                @foreach (var item in Model.UnitDataModel)
+                                {
+                                    <option value="@item.Name">@item.Name</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="UnitName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input id="btnSubmit" type="submit" value="Submit" class="btn btn-primary" />
+                    <button id="externalDataModalClose" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/js/externalData.js" asp-append-version="true"></script>
+}

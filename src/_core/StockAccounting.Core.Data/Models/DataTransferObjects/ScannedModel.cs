@@ -8,5 +8,8 @@ namespace StockAccounting.Core.Data.Models.DataTransferObjects
         public InventoryDataBaseModel inventoryData { get; set; }
 
         public ObservableCollection<ExternalDataModel> scannedData { get; set; }
+
+        public ObservableCollection<ToolkitHistoryModel> usedToolkitData { get; set; }
+
     }
 }

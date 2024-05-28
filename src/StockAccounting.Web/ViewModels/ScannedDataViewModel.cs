@@ -10,12 +10,16 @@ namespace StockAccounting.Web.ViewModels
         public int Id { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "This field is required!")]
+        [Required(ErrorMessage = "External data is required!")]
         public int ExternalDataId { get; set; }
 
         public int InventoryDataId { get; set; }
 
-        [Range(0.01, int.MaxValue, ErrorMessage = "This field is required!")]
         public decimal Quantity { get; set; }
+
+        [Range(0.01, int.MaxValue, ErrorMessage = "This field is required!")]
+        [Required(ErrorMessage = "Quantity is required!")]
+        public string QuantityString { get; set; } = string.Empty;
 
         public IEnumerable<ExternalDataModel>? ExternalData { get; set; }
 

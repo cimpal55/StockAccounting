@@ -1,0 +1,64 @@
+﻿@model ToolkitViewModel
+
+<div id="toolkitDataModal" class="modal-body">
+    <form id="toolkitForm" data-ajax="true">
+        <div id="newToolkitDataModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add new toolkit</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input type="hidden" id="lastIndex" value="@Model.ToolkitExternalDataModelIndex" />
+                            <label asp-for="ToolkitName" class="control-label"><b>ToolkitName</b></label>
+                            <input asp-for="ToolkitName" class="form-control" name="ToolkitName" required />
+                            <span asp-validation-for="ToolkitName" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Description" class="control-label"><b>Description</b></label>
+                            <input asp-for="Description" class="form-control" name="Description" />
+                        </div>
+                    </div>
+                    <div class="col-12 table-bordered">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ExternalData</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="addTable">
+                                <tr>
+                                    <td width="300px">
+                                        <select class="external" id="@string.Format("externalData_{0}", 0)" 
+                                                asp-for="ToolkitExternalDataModel[0].ExternalDataId" style="width: 280px">
+                                            <option value="0" selected="selected">-Choose-</option>
+                                        </select>
+                                        <span asp-validation-for="ToolkitExternalDataModel[0].ExternalDataId" class="text-danger"></span>
+                                    </td>
+                                    <td>
+                                        @Html.TextBoxFor(model => model.ToolkitExternalDataModel[0].Quantity, new { @Value = "", @class = "form-control", @type = "number" })
+                                        @Html.ValidationMessageFor(model => model.ToolkitExternalDataModel[0].Quantity)
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-success" 
+                                style="margin-bottom: 10px;"
+                                type="button"
+                                id="addRow">Add more</button>
+                    </div>
+                    <div class="modal-footer">
+                        <input id="btnSubmit" type="submit" value="Submit" class="btn btn-primary" />
+                        <button id="toolkitDataModalClose" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+@{
+}

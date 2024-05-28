@@ -22,7 +22,7 @@ namespace StockAccounting.Core.Data.Models.Data
         [Column(ExternalData.Name, CanBeNull = false)]
         public string Name { get; set; } = string.Empty;
 
-        public int UnitId { get; set; }
+        //public int UnitId { get; set; }
 
         [Column(ExternalData.Unit, CanBeNull = true)]
         public string Unit { get; set; } = string.Empty;

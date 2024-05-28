@@ -24,9 +24,26 @@ $(document).ready(function () {
             { width: 110, targets: 4 },
             { width: 110, targets: 5 },
             { width: 110, targets: 6 },
-            { orderable: false, targets: [0, 7] }
+            { orderable: false, targets: [0, 7] },
+            {
+                "targets": [5],
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    var els = document.querySelectorAll("a[id='quantity']");
+                    els.forEach(numberStyle);
+                }
+            },
         ],
     });
+
+
+    function numberStyle(item) {
+        if (item.innerText.trim() > '0.00') {
+            item.style.color = 'green';
+        }
+        else {
+            item.style.color = 'red';
+        }
+    }
 
     $("#stockTable").on('draw.dt', function () {
         $('.page-link-datatable').each(function () {
@@ -79,7 +96,7 @@ $(function () {
 });
 
 $(function () {
-    $(".dropdown-item").click(function () {
+    $(".stockExcel").click(function () {
         var table = $('#stockTable').DataTable();
         var idList = [];
         var mode = $(this).attr("value");

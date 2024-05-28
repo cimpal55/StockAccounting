@@ -14,7 +14,7 @@ namespace StockAccounting.Core.Data.Models.Data
         public string DocumentSerialNumber { get; set; } = string.Empty;
 
         [Column(ScannedData.DocumentNumber, CanBeNull = false)]
-        public int DocumentNumber { get; set; }
+        public int? DocumentNumber { get; set; }
 
         [Column(ScannedData.InventoryDataId, CanBeNull = false)]
         public int InventoryDataId { get; set; }

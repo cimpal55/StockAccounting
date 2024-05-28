@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using StockAccounting.Core.Data.Repositories;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 using StockAccounting.Core.Data.Services;
@@ -17,10 +18,12 @@ namespace StockAccounting.Core.Data.Utils.ServiceRegistration
                 .AddScoped<ISmtpEmailService, SmtpEmailService>()
                 .AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>))
                 .AddScoped<IEmployeeDataRepository, EmployeeDataRepository>()
+                .AddScoped<IUnitsRepository, UnitsRepository>()
                 .AddScoped<IExternalDataRepository, ExternalDataRepository>()
                 .AddScoped<IInventoryDataRepository, InventoryDataRepository>()
                 .AddScoped<IScannedDataRepository, ScannedDataRepository>()
-                .AddScoped<IStockDataRepository, StockDataRepository>();
+                .AddScoped<IStockDataRepository, StockDataRepository>()
+                .AddScoped<IToolkitRepository, ToolkitRepository>();
 
         //.AddScoped<IAdministrationRepository, AdministrationRepository>();
     }

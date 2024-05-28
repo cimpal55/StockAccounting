@@ -23,10 +23,18 @@ namespace StockAccounting.Api.Controllers
         }
 
         [HttpGet]
-        [Route("{barcode}")]
+        [Route("barcode={barcode}")]
         public async Task<ActionResult<List<ExternalDataModel>>> GetExternalDataByBarcode(string barcode)
         {
             var result = await _repository.GetExternalDataByBarcode(barcode);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("id={externalDataId}")]
+        public async Task<ActionResult<List<ExternalDataModel>>> GetExternalDataById(int externalDataId)
+        {
+            var result = await _repository.GetExternalDataById(externalDataId);
             return Ok(result);
         }
     }

@@ -19,6 +19,9 @@ namespace StockAccounting.Core.Data.Models.Data
         [Column(Name = "Employee")]
         public string Employee { get; set; } = string.Empty;
 
+        [Column(Name = "EmployeeId")]
+        public int EmployeeId { get; set; }
+
         [Column(Name = "Type")]
         public string Type { get; set; } = string.Empty;
 

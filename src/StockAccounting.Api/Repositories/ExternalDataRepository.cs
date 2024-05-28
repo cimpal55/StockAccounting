@@ -22,20 +22,12 @@ namespace StockAccounting.Api.Repositories
             await _conn
                 .ExternalData
                 .Where(x => x.Barcode == barcode)
-                .FirstAsync();
+                .FirstOrDefaultAsync();
 
-        public ExternalDataModel GetExternalDataById(int externalDataId)
-        {
-            var query = from c in _conn.ExternalData
-                        where c.Id == externalDataId
-                        select new ExternalDataModel
-                        {
-                            Name = c.Name,
-                            ItemNumber = c.ItemNumber,
-                            PluCode = c.PluCode
-                        };
-
-            return query.FirstOrDefault() ?? new();
-        }
+        public async Task<ExternalDataModel> GetExternalDataById(int externalDataId) =>
+            await _conn
+                .ExternalData
+                .Where(x => x.Id == externalDataId)
+                .FirstOrDefaultAsync();
     }
 }

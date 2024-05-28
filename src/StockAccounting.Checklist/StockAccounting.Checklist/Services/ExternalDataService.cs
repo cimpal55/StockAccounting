@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
+using ZXing.QrCode.Internal;
 
 namespace StockAccounting.Checklist.Services
 {
@@ -17,26 +18,38 @@ namespace StockAccounting.Checklist.Services
         {
             _repository = repository;
         }
-        public Task<ObservableCollection<ExternalDataModel>> GetExternalDataAsync()
+        public async Task<ObservableCollection<ExternalDataModel>> GetExternalDataAsync()
         {
-            UriBuilder uriBuilder = new UriBuilder(ApiConstants.BaseApiUrl)
+            UriBuilder uriBuilder = new UriBuilder(ApiConstants.ApiUrl)
             {
                 Path = ApiConstants.ExternalData
             };
 
-            var externalData = _repository.GetAsync<ObservableCollection<ExternalDataModel>>(uriBuilder.ToString());
+            var externalData = await _repository.GetAsync<ObservableCollection<ExternalDataModel>>(uriBuilder.ToString());
 
             return externalData;
         }
 
-        public Task<ExternalDataModel> GetExternalDataByBarcodeAsync(string barcode)
+        public async Task<ExternalDataModel> GetExternalDataByBarcodeAsync(string barcode)
         {
-            UriBuilder uriBuilder = new UriBuilder(ApiConstants.BaseApiUrl)
+            UriBuilder uriBuilder = new UriBuilder(ApiConstants.ApiUrl)
             {
-                Path = ApiConstants.ExternalData + $"/{barcode}"
+                Path = ApiConstants.ExternalDataBarcode + barcode
             };
 
-            var externalData = _repository.GetAsync<ExternalDataModel>(uriBuilder.ToString());
+            var externalData = await _repository.GetAsync<ExternalDataModel>(uriBuilder.ToString());
+
+            return externalData;
+        }
+
+        public async Task<ExternalDataModel> GetExternalDataByIdAsync(int externalDataId) {
+
+            UriBuilder uriBuilder = new UriBuilder(ApiConstants.ApiUrl)
+            {
+                Path = ApiConstants.ExternalDataId + externalDataId
+            };
+
+            var externalData = await _repository.GetAsync<ExternalDataModel>(uriBuilder.ToString());
 
             return externalData;
         }

@@ -1,6 +1,8 @@
-﻿@model StockEmployeesViewModel
+﻿@using System.Globalization
+@model StockEmployeesViewModel
 @{
     ViewData["Title"] = "StockDetails";
+    IFormatProvider theCultureInfo = new System.Globalization.CultureInfo("lv", true);
 }
 
 <div class="container">
@@ -17,6 +19,7 @@
         <table class="table table-striped" id="stockDetailsTable">
             <thead>
             <tr>
+                <th>Document Number</th>
                 <th>Employee</th>
                 <th>Quantity</th>
                 <th>Type</th>
@@ -26,22 +29,29 @@
             <tbody>
             @{
                 System.Diagnostics.Debug.Assert(Model != null, nameof(Model) + " != null");
-                    System.Diagnostics.Debug.Assert(Model.StockEmployeesModel != null, "Model.StockEmployeesModel != null");
-                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+                System.Diagnostics.Debug.Assert(Model.StockEmployeesModel != null, "Model.StockEmployeesModel != null");
             }
                 @foreach (var item in Model.StockEmployeesModel)
             {
                 <tr id="data_@item.Id">
+                    @if (item.DocumentNumber != null)
+                    {
+                        <td>@string.Join("", string.Format("{0:000}", item.DocumentNumber), item.DocumentSerialNumber)</td>
+                    }
+                    else
+                    {
+                        <td>@item.DocumentSerialNumber</td>
+                    }
                     <td>@item.Employee</td>
-                    <td>@item.Quantity</td>
+                    <td>@String.Format(CultureInfo.InvariantCulture, "{0:0.00}", item.Quantity)</td>
                     <td>@item.StockType</td>
-                    <td>@TimeZoneInfo.ConvertTimeToUtc(item.Created, tzi)</td>
+                    <td>@item.Created.ToString("dd.MM.yyyy HH:mm")</td>
                 </tr>
             }
             </tbody>
         </table>
     </div>
-    <div class="row justify-content-end pr-3">
+@*     <div class="row justify-content-end pr-3">
         <nav aria-label="Page navigation">
             <ul class="pagination">
                 @if (Model.EndPage > 9)
@@ -62,7 +72,7 @@
                 }
             </ul>
         </nav>
-    </div>
+    </div> *@
 </div>
 
 @section Scripts{

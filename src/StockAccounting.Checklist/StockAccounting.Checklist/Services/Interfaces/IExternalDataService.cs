@@ -11,6 +11,6 @@ namespace StockAccounting.Checklist.Services.Interfaces
     {
         Task<ObservableCollection<ExternalDataModel>> GetExternalDataAsync();
         Task<ExternalDataModel> GetExternalDataByBarcodeAsync(string barcode);
-
+        Task<ExternalDataModel> GetExternalDataByIdAsync(int externalDataId);
     }
 }

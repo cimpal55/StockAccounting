@@ -8,6 +8,7 @@ using StockAccounting.Web.Constants;
 using StockAccounting.Web.Extensions;
 using StockAccounting.Web.Services.Interfaces;
 using StockAccounting.Web.ViewModels;
+using System.Globalization;
 
 namespace StockAccounting.Web.Controllers
 {
@@ -16,10 +17,12 @@ namespace StockAccounting.Web.Controllers
         private readonly IPaginationService _paginationService;
         private readonly ILogger<ScannedDataController> _logger;
         private readonly IGenericRepository<ScannedDataBaseModel> _repository;
+        private readonly IGenericRepository<StockEmployeesBaseModel> _gStockEmployeesRepository;
         private readonly IExternalDataRepository _externalDataRepository;
         private readonly IScannedDataRepository _scannedDataRepository;
         private readonly ISmtpEmailService _smtpEmailService;
         private readonly IStockDataRepository _stockDataRepository;
+        private readonly IInventoryDataRepository _inventoryDataRepository;
         public ScannedDataController(
             IPaginationService paginationService,
             ILogger<ScannedDataController> logger,
@@ -27,7 +30,9 @@ namespace StockAccounting.Web.Controllers
             IExternalDataRepository externalDataRepository,
             IScannedDataRepository scannedDataRepository,
             ISmtpEmailService smtpEmailService,
-            IStockDataRepository stockDataRepository)
+            IStockDataRepository stockDataRepository,
+            IInventoryDataRepository inventoryDataRepository,
+            IGenericRepository<StockEmployeesBaseModel> gStockEmployeesRepository)
         {
             _paginationService = paginationService;
             _logger = logger;
@@ -36,6 +41,8 @@ namespace StockAccounting.Web.Controllers
             _scannedDataRepository = scannedDataRepository;
             _smtpEmailService = smtpEmailService;
             _stockDataRepository = stockDataRepository;
+            _inventoryDataRepository = inventoryDataRepository;
+            _gStockEmployeesRepository = gStockEmployeesRepository;
         }
         public async Task<IActionResult> Details(int pageId, int id)
         {
@@ -74,8 +81,10 @@ namespace StockAccounting.Web.Controllers
             return Json(null);
         }
         [HttpPost("InsertScannedData")]
-        public async Task<ActionResult> InsertScannedData([Bind("ExternalDataId, InventoryDataId, Quantity")] ScannedDataViewModel item)
+        public async Task<ActionResult> InsertScannedData([Bind("ExternalDataId, InventoryDataId, QuantityString")] ScannedDataViewModel item)
         {
+            item.Quantity = decimal.Parse(item.QuantityString, CultureInfo.InvariantCulture);
+
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Select(x => x.Value.Errors)
@@ -89,22 +98,27 @@ namespace StockAccounting.Web.Controllers
             var pages = await _paginationService.PaginatedDocuments(1, _itemsPerPage);
             var pageId = pages.TotalData % _itemsPerPage == 0 ? pages.TotalPages + 1 : pages.TotalPages;
 
-            var scannedDataBaseModel = new ScannedDataBaseModel
-            {
-                Id = item.Id,
-                ExternalDataId = item.ExternalDataId,
-                InventoryDataId = item.InventoryDataId,
-                Quantity = item.Quantity,
-                Created = DateTime.Now  
-            };
-
             try 
             {
+                isSynchronization = _scannedDataRepository.IsSynchronizationDocument(item.InventoryDataId);
+
+                var employeeId = _scannedDataRepository.ReturnDocumentEmployees(item.InventoryDataId);
+                var docNrList = await _scannedDataRepository.GetDocumentNumber(employeeId, item.InventoryDataId);
+
+                var scannedDataBaseModel = new ScannedDataBaseModel
+                {
+                    Id = item.Id,
+                    DocumentNumber = Convert.ToInt32(docNrList["DocNr"]),
+                    DocumentSerialNumber = docNrList["DocSerNr"],
+                    ExternalDataId = item.ExternalDataId,
+                    InventoryDataId = item.InventoryDataId,
+                    Quantity = item.Quantity,
+                    Created = DateTime.Now
+                };
+
                 Log.Information("WEB_InsertScannedData {@Data}", scannedDataBaseModel);
                 Log.CloseAndFlush();
                 await _repository.InsertAsync(scannedDataBaseModel);
-
-                isSynchronization = _scannedDataRepository.IsSynchronizationDocument(item.InventoryDataId);
 
                 List<ScannedDataBaseModel> scannedData = new()
                 {
@@ -114,8 +128,10 @@ namespace StockAccounting.Web.Controllers
                 var stockEmployeeData = new StockEmployeesModel()
                 {
                     IsSynchronization = isSynchronization,
+                    DocumentNumber = scannedDataBaseModel.DocumentNumber,
+                    DocumentSerialNumber = scannedDataBaseModel.DocumentSerialNumber,
                     ExternalDataId = item.ExternalDataId,
-                    EmployeeId = _scannedDataRepository.ReturnDocumentEmployees(item.InventoryDataId),
+                    EmployeeId = employeeId,
                     StockTypeId = isSynchronization ? (int)StockTypes.Accepted : (int)StockTypes.Returned,
                     Quantity = item.Quantity,
                     Created = DateTime.Now,
@@ -125,7 +141,7 @@ namespace StockAccounting.Web.Controllers
 
                 var emailTo = _scannedDataRepository.ReturnEmployeeNotificationEmail(stockEmployeeData.EmployeeId);
 
-                if(isSynchronization)
+                if (isSynchronization)
                     _smtpEmailService.SendEmail(emailTo, scannedData);
 
                 this.AddAlertSuccess(WebConstants.Success);
@@ -133,6 +149,7 @@ namespace StockAccounting.Web.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
+                this.AddAlertDanger(WebConstants.Error);
             }
 
             return Redirect($"ScannedData/Details/{item.InventoryDataId}");
@@ -186,6 +203,12 @@ namespace StockAccounting.Web.Controllers
         {
             try
             {
+                ScannedDataBaseModel scannedDataModel = await _scannedDataRepository.ReturnScannedDataById(item.Id);
+                StockEmployeesBaseModel stockEmployeeModel = await _scannedDataRepository.GetStockEmployeeByScannedData(scannedDataModel);
+                int sign = await _inventoryDataRepository.ReturnInventorySynchronizationAsync(scannedDataModel.InventoryDataId) ? -1 : 1;
+
+                await _stockDataRepository.UpdateStockQuantity(stockEmployeeModel.StockDataId, stockEmployeeModel.Quantity * sign);
+                await _gStockEmployeesRepository.DeleteAsync(stockEmployeeModel);
                 await _repository.DeleteAsync(item);
                 this.AddAlertSuccess("Scanned data is successfully deleted!");
 

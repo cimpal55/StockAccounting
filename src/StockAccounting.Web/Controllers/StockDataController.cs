@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
 using StockAccounting.Core.Data;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 using StockAccounting.Web.Constants;
@@ -54,6 +55,18 @@ namespace StockAccounting.Web.Controllers
                 TotalData = items.TotalData,
                 StartPage = pageId >= _pagesInRow ? pageId - 2 : 1,
                 EndPage = pageId >= _pagesInRow && pageId < items.TotalPages ? pageId + 1 : items.TotalPages > _pagesInRow && pageId < items.TotalPages ? _pagesInRow : items.TotalPages,
+            };
+
+            return View(data);
+        }
+
+        public async Task<IActionResult> LeftQuantity(int stockDataId)
+        {
+            var items = await _stockDataRepository.GetStockLeftQuantity(stockDataId);
+
+            var data = new StockEmployeesViewModel
+            {
+                StockEmployeesModel = items,
             };
 
             return View(data);

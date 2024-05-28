@@ -24,14 +24,14 @@ namespace StockAccounting.Checklist.Services
             _repository = repository;
         }
 
-        public Task<ObservableCollection<EmployeeDataModel>> GetEmployeeDataAsync()
+        public async Task<ObservableCollection<EmployeeDataModel>> GetEmployeeDataAsync()
         {
-            UriBuilder uriBuilder = new UriBuilder(ApiConstants.BaseApiUrl)
+            UriBuilder uriBuilder = new UriBuilder(ApiConstants.ApiUrl)
             {
                 Path = ApiConstants.EmployeeData
             };
 
-            var employeeData = _repository.GetAsync<ObservableCollection<EmployeeDataModel>>(uriBuilder.ToString());
+            var employeeData = await _repository.GetAsync<ObservableCollection<EmployeeDataModel>>(uriBuilder.ToString());
 
             return employeeData;
         }

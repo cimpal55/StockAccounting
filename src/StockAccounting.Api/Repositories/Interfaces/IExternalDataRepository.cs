@@ -6,6 +6,6 @@ namespace StockAccounting.Api.Repositories.Interfaces
     {
         Task<List<ExternalDataModel>> GetExternalData();
         Task<ExternalDataModel> GetExternalDataByBarcode(string plucode);
-        ExternalDataModel GetExternalDataById(int externalDataId);
+        Task<ExternalDataModel> GetExternalDataById(int externalDataId);
     }
 }

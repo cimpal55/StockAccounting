@@ -1,6 +1,5 @@
 ﻿using LinqToDB;
 using LinqToDB.AspNet;
-using Microsoft.Win32.TaskScheduler;
 using FirebirdSql.Data.FirebirdClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +11,6 @@ using StockAccounting.Core.Data.Repositories.Interfaces;
 using System.Globalization;
 using Serilog;
 using Dayton.NetsuiteOAuth1RestApi.Services;
-using Azure.Identity;
 
 IConfiguration _configuration = new ConfigurationBuilder()
   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -20,17 +18,25 @@ IConfiguration _configuration = new ConfigurationBuilder()
   .AddCommandLine(args)
   .Build();
 
+var logFilePath = $"Logs/log-.txt";
+
+#if (RELEASE)
+    logFilePath = $"C:\\www\\StockAccounting\\Synchronization\\Logs\\log-.txt";
+#endif
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
-    .WriteTo.File($"Logs/log.txt")
+    .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Hour)
     .CreateLogger();
 
 var serviceProvider = CreateServices();
 var _repository = serviceProvider.GetRequiredService<IGenericRepository<EmployeeDataModel>>();
-var _externalDataRepository = serviceProvider.GetRequiredService<IGenericRepository<ExternalDataModel>>();
+var _externalRepository = serviceProvider.GetRequiredService<IGenericRepository<ExternalDataModel>>();
+var _externalDataRepository = serviceProvider.GetRequiredService<IExternalDataRepository>();
 var _employeeRepository = serviceProvider.GetRequiredService<IEmployeeDataRepository>();
 var _scannedDataRepository = serviceProvider.GetRequiredService<IScannedDataRepository>();
+var _stockDataRepository = serviceProvider.GetRequiredService<IStockDataRepository>();
 
 using var scope = serviceProvider.CreateScope();
 await SynchronizationAsync(scope.ServiceProvider);
@@ -51,8 +57,8 @@ IServiceProvider CreateServices()
 
 async System.Threading.Tasks.Task SynchronizationAsync(IServiceProvider serviceProvider)
 {
-    Log.Information("Synchronization start");
-    //ScheduleCreate();
+    var startDate = DateTime.Now;
+    Log.Information("Synchronization start: {date}", startDate);
 
     IEnumerable<SynchronizationModel> fromScanned;
     IEnumerable<EmployeeDataModel> fromEmployees;
@@ -60,12 +66,12 @@ async System.Threading.Tasks.Task SynchronizationAsync(IServiceProvider serviceP
     string ConnectionString = _configuration["ConnectionStrings:Firebird"];
     Log.Debug("Connection string is: {ConnectionString}", ConnectionString);
     Log.Debug("");
-    var connection = new FbConnection(ConnectionString);
-    try
-    {
-        await connection.OpenAsync();
 
-        // Getting and comparing employees
+    using (var connection = new FbConnection(ConnectionString))
+    {
+        connection.Open();
+
+        //// Getting and comparing employees
         Log.Information("---- Employee synchronization started ----");
         IEnumerable<EmployeeDataModel> dbEmployees = await _employeeRepository.GetEmployeesAsync().ConfigureAwait(false);
         fromEmployees = GetEmployeesFromFirebird(connection);
@@ -81,24 +87,30 @@ async System.Threading.Tasks.Task SynchronizationAsync(IServiceProvider serviceP
 
         // Getting and comparing external data
         Log.Information("---- External data synchronization started ----");
-        await ExternalDataSynchronizationAsync();
+        IEnumerable<ExternalDataModel> dbExternalData = await _externalDataRepository.GetExternalDataAsync().ConfigureAwait(false);
+        await ExternalDataSynchronizationAsync(dbExternalData.ToList());
         Log.Debug("External data synchronization finished");
         Log.Debug("");
 
-        // Getting and comparing scanned data
-        //Log.Information("---- Used stocks synchronization started ----");
-        //fromScanned = GetUsedScannedDataFromFirebird(connection);
-        //await _scannedDataRepository.SynchronizationWithServiceTrader(fromScanned);
+        // Getting and comparing used data
+        Log.Information("---- Used stocks synchronization started ----");
+        bool stockExists = await _stockDataRepository.CheckIfStockEmployeeExists();
+        if (stockExists)
+        {
+            fromScanned = await GetUsedScannedDataFromFirebirdAsync(connection);
+            await _scannedDataRepository.SynchronizationWithServiceTrader(fromScanned);
+            Log.Debug("Stock data synchronization finished");
+            Log.Debug("");
+        }
+        else
+        {
+            Log.Debug("Stock attached to employees weren't found");
+        }
 
-
-    }
-    catch (Exception x)
-    {
-        Console.WriteLine(x.Message);
-    }
-    finally
-    {
-        connection.Close();
+        var endDate = DateTime.Now;
+        var spentTime = endDate - startDate;
+        Log.Information("Synchronization finished: {endDate}", endDate);
+        Log.Information("Synchronization spent time: {spentTime}", spentTime);
     }
 }
 
@@ -119,7 +131,7 @@ IEnumerable<EmployeeDataModel> GetEmployeesFromFirebird(FbConnection conn)
 
         if (!string.IsNullOrWhiteSpace(employee.Code) && !string.IsNullOrWhiteSpace(employee.Name) && !string.IsNullOrWhiteSpace(employee.Surname))
         {
-            if (employee.Code == "ZST" || employee.Code == "JER")
+            if (employee.Code == "ZST" || employee.Code == "JER" || employee.Code == "DPE")
                 employee.IsManager = true;
 
             fromEmployees.Add(employee);
@@ -156,32 +168,50 @@ async System.Threading.Tasks.Task CompareEmployeesAsync(IEnumerable<EmployeeData
     return;
 }
 
-IEnumerable<SynchronizationModel> GetUsedScannedDataFromFirebird(FbConnection conn)
+async Task<IEnumerable<SynchronizationModel>> GetUsedScannedDataFromFirebirdAsync(FbConnection conn)
 {
     List<SynchronizationModel> fromScanned = new();
-    var usedList = new FbCommand($@"SELECT TRIM(wr.WORKER_NAME) || ' ' || TRIM(wr.WORKER_SURNAME) as WORKER,
-                                        sdc.DOC_SER_NR || '' || sdc.DOC_NR AS DOCNR, gd.BARCODE, sd.ENTERED  
+    List<string> employees = await _stockDataRepository.ReturnStockEmployeesCodes();
+    string employeesString = string.Empty;
+    foreach (var item in employees)
+    {
+        var tempString = $"'{item}'";
+
+        employeesString += tempString;
+    }
+    employeesString = employeesString.Replace("''", "','");
+
+    var usedList = new FbCommand($@"SELECT wr.WORKER_CODE as WORKER,
+                                        sdc.DOC_SER_NR, sdc.DOC_NR, gd.BARCODE, sd.AMOUNT, sd.ENTERED  
                                     FROM GOODS gd 
                                     JOIN SELL_DET sd ON gd.GOOD_ID = sd.GOOD_ID 
                                     JOIN SELL_DOC sdc ON sd.SELL_DOC_ID = sdc.SELL_DOC_ID
                                     JOIN SELL_DET_WORKERS sdw ON sdw.SELL_DET_ID = sd.SELL_DET_ID  
                                     JOIN WORKERS wr ON wr.WORKER_ID = sdw.WORKERS_ID
-                                    WHERE sd.ENTERED > '{DateTime.Now.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture)}'", conn);
+                                    WHERE sd.ENTERED > '{DateTime.Now.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture)}'
+                                        AND wr.WORKER_CODE IN({employeesString})", conn);
     var usedReader = usedList.ExecuteReader();
     while (usedReader.Read())
     {
         var used = new SynchronizationModel
         {
             Employee = usedReader.GetString(0),
-            Barcode = usedReader.GetString(2)
+            DocumentSerialNumber = usedReader.GetString(1),
+            DocumentNumber = usedReader.GetString(2),
+            Barcode = usedReader.GetString(3),
+            Quantity = usedReader.GetDecimal(4),
+            Created = usedReader.GetDateTime(5),
         };
+
+        Log.Debug("{0}", used);
+
         fromScanned.Add(used);
     }
 
     return fromScanned;
 }
 
-async System.Threading.Tasks.Task ExternalDataSynchronizationAsync()
+async System.Threading.Tasks.Task ExternalDataSynchronizationAsync(List<ExternalDataModel> dbData)
 {
     var today = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day);
     var url = $"?q=createdDate ON_OR_AFTER \"{today:dd.MM.yyyy}\"";
@@ -189,6 +219,8 @@ async System.Threading.Tasks.Task ExternalDataSynchronizationAsync()
     Log.Debug("Getting netsuite items by {date}", $"{today.ToShortDateString()}");
     var netsuiteItems = await nsApiService.GetInventoryItems(url).ConfigureAwait(false);
     Log.Debug("Netsuite items count: {netsuiteItems}", netsuiteItems.Count());
+    List<ExternalDataModel> fbData = new List<ExternalDataModel>();
+
     foreach (var item in netsuiteItems)
     {
         var external = new ExternalDataModel
@@ -202,8 +234,32 @@ async System.Threading.Tasks.Task ExternalDataSynchronizationAsync()
             Updated = DateTime.Now,
         };
 
-        await _externalDataRepository.InsertAsync(external);
+        fbData.Add(external);
     }
+
+    int unmatched = 0;
+
+    foreach (var item in fbData)
+    {
+        if(await _externalDataRepository.CheckIfExists(item.Barcode) != true)
+        {
+            await _externalRepository
+                .InsertAsync(item)
+                .ConfigureAwait(false);
+
+            unmatched++;
+        }
+        else
+        {
+            await _externalDataRepository
+                .UpdateExternalDataAsyncByBarcode(item)
+                .ConfigureAwait(false);
+
+            unmatched++;
+        }
+    }
+
+    Log.Debug("Were found {0} unmatched external data", unmatched);
 }
 
 //static void ScheduleCreate()
