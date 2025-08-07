@@ -4,7 +4,7 @@ using System.Text;
 
 namespace StockAccounting.Checklist.Models.Data
 {
-    public class InventoryDataModel : InventoryDataBaseModel
+    public class DocumentDataModel : DocumentDataBaseModel
     {
         public string Employee1 { get; set; } = string.Empty;
 

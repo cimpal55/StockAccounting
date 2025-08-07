@@ -46,11 +46,25 @@
         public static class InventoryData
         {
             public const string Id = "ID";
+            public const string Name = "Name";
+            public const string Employee1CheckerId = "Employee1CheckerID";
+            public const string Employee2CheckerId = "Employee2CheckerID";
+            public const string ScannedEmployeeId = "ScannedEmployeeID";
+            public const string Status = "Status";
+            public const string ManuallyAdded = "ManuallyAdded";
+            public const string Created = "Created";
+            public const string Updated = "Updated";
+            public const string Finished = "Finished";
+        }
+
+        public static class DocumentData
+        {
+            public const string Id = "ID";
             public const string Employee1Id = "Employee1ID";
             public const string Employee2Id = "Employee2ID";
             public const string ManuallyAdded = "ManuallyAdded";
             public const string IsSynchronization = "IsSynchronization";
-            public const string Completed = "Completed";
+            public const string DocumentType = "DocumentType";
             public const string Created = "Created";
             public const string Updated = "Updated";
         }
@@ -60,10 +74,28 @@
             public const string Id = "ID";
             public const string DocumentSerialNumber = "DocumentSerialNumber";
             public const string DocumentNumber = "DocumentNumber";
+            public const string DocumentDataId = "DocumentDataID";
             public const string InventoryDataId = "InventoryDataID";
             public const string ExternalDataId = "ExternalDataID";
             public const string Quantity = "Quantity";
             public const string Created = "Created";
+        }
+
+        public static class ScannedInventoryData
+        {
+            public const string Id = "ID";
+            public const string InventoryDataId = "InventoryDataID";
+            public const string Name = "Name";
+            public const string ItemNumber = "ItemNumber";
+            public const string Barcode = "Barcode";
+            public const string PluCode = "PluCode";
+            public const string Unit = "Unit";
+            public const string Quantity = "Quantity";
+            public const string CheckedQuantity = "CheckedQuantity";
+            public const string FinalQuantity = "FinalQuantity";
+            public const string IsExternal = "IsExternal";
+            public const string Created = "Created";
+            public const string Updated = "Updated";
         }
 
         public static class StockEmployees

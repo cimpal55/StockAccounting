@@ -13,3 +13,11 @@ $(document).ready(function () {
     $('a[href$="' + location.pathname + '"]').removeClass('collapsed');
 });
 
+$(document).ready(function () {
+    $('.select2').each(function () {
+        $(this).select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $(this).parent(),
+        });
+    });
+});

@@ -13,8 +13,12 @@ html {
   min-height: 100%;
 }
 
+
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    font-family: "Open Sans", sans-serif !important;
+    background: #f6f9ff !important;
+    color: #444444 !important;
 }
 
 .btn-group-xs > .btn, .btn-xs {
@@ -172,4 +176,78 @@ table.dataTable tbody, td {
 
 .admin-button {
     padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x) !important;
+}
+
+#inventoryDetailsTable {
+    --bs-table-bg: transparent;
+}
+
+#inventoryDetailsTable tbody tr {
+    background-color: white !important;
+}
+
+#inventoryDetailsTable tbody tr.highlight-row-red {
+    background-color: #ffcccc !important;
+}
+
+#inventoryDetailsTable tbody tr.highlight-row-green {
+    background-color: lightgreen !important; 
+}
+
+.form-check-label {
+    font-size: 16px; 
+    color: #333; 
+    margin-left: 10px;
+}
+
+#filterRedContainer .form-check-label {
+    color: red;
+}
+
+#filterGreenContainer .form-check-label {
+    color: green;
+}
+
+.form-select-sm {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#stockDetailsTable thead th {
+    position: relative;
+    padding-bottom: 45px;
+}
+
+#stockDetailsTable thead th select {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: 95%;
+    margin: 5px 0;
+    padding: 0.25rem 2rem 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+}
+
+#stockDetailsTable thead th select:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    float: left !important;
+    text-align: left !important;
+}
+
+td.text-right {
+    text-align: right !important;
 }

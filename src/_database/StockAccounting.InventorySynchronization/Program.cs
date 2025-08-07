@@ -4,9 +4,12 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using StockAccounting.Core.Data;
 using StockAccounting.Core.Data.DbAccess;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Enums;
+using StockAccounting.Core.Data.Models.Data.DocumentData;
+using StockAccounting.Core.Data.Models.Data.ExternalData;
+using StockAccounting.Core.Data.Models.Data.ScannedData;
+using StockAccounting.Core.Data.Models.Data.StockEmployees;
 using StockAccounting.Core.Data.Models.DataTransferObjects;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 using StockAccounting.Core.Data.Utils.ServiceRegistration;
@@ -35,7 +38,7 @@ var dbConnectionString = _configuration["ConnectionStrings:DbConnectionString"];
 
 var serviceProvider = CreateServices();
 
-var _inventoryDataRepository = serviceProvider.GetRequiredService<IInventoryDataRepository>();
+var _documentDataRepository = serviceProvider.GetRequiredService<IDocumentDataRepository>();
 var _externalDataRepository = serviceProvider.GetRequiredService<IExternalDataRepository>();
 var _employeeRepository = serviceProvider.GetRequiredService<IEmployeeDataRepository>();
 var _stockDataRepository = serviceProvider.GetRequiredService<IStockDataRepository>();
@@ -59,7 +62,7 @@ IServiceProvider CreateServices()
 
 async Task SynchronizationAsync(IServiceProvider serviceProvider)
 {
-    List<SynchronizationModel> inventoryList;
+    List<SynchronizationModel> documentList;
     var dateStart = DateTime.Now;
     Log.Information("----------------Synchronization start----------------");
     Log.Information("Time: {date}", dateStart);
@@ -70,16 +73,17 @@ async Task SynchronizationAsync(IServiceProvider serviceProvider)
     {
         Log.Debug("");
 
-        inventoryList = GetInventoryDataList(connectionString);
+        await GetExternalDataAsync(connectionString);
+        documentList = GetDocumentDataList(connectionString);
 
-        if(inventoryList.Count() > 0)
+        if (documentList.Count() > 0)
         {
-            Log.Debug("Inventory data count: {count}", inventoryList.Count());
+            Log.Debug("Document data count: {count}", documentList.Count());
             Log.Debug("");
 
-            Log.Debug("------Starting synchronizing database with inventory data-------");
+            Log.Debug("------Starting synchronizing database with document data-------");
 
-            await CreateDocumentsFromInventory(inventoryList);
+            await CreateDocumentsFromInventory(documentList);
 
             Log.Debug("");
             Log.Debug("------Synchronization finished!------");
@@ -90,7 +94,7 @@ async Task SynchronizationAsync(IServiceProvider serviceProvider)
         }
         else
         {
-            Log.Debug("Inventory data wasn't found!");
+            Log.Debug("Document data wasn't found!");
         }
     }
     catch (Exception x)
@@ -100,14 +104,57 @@ async Task SynchronizationAsync(IServiceProvider serviceProvider)
 }
 
 
-List<SynchronizationModel> GetInventoryDataList(string? connectionString)
+async Task GetExternalDataAsync(string? connectionString)
 {
-    List<SynchronizationModel> inventoryList = new();
+    using (SqlConnection connection = new SqlConnection(connectionString))
+    {
+        connection.Open();
+        string sql = @"SELECT ex.Barcode, ex.PluCode, ex.ItemNumber, ex.DisplayName, ex.Unit, ex.Created, ex.Updated
+  FROM TBL_ScannedData sc
+  JOIN TBL_ExternalData ex on sc.Barcode = ex.Barcode";
+
+
+        using (var command = new SqlCommand(sql, connection))
+        {
+            using (var reader = command.ExecuteReader())
+            {
+                try
+                {
+                    while (reader.Read())
+                    {
+                        var externalData = new ExternalDataModel()
+                        {
+                            Barcode = reader.GetString(0),
+                            PluCode = reader.GetString(1),
+                            ItemNumber = reader.GetString(2),
+                            Name = reader.GetString(3),
+                            Unit = reader.GetString(4),
+                            Created = reader.GetDateTime(5),
+                            Updated = reader.GetDateTime(5)
+                        };
+
+                        var id = await _externalDataRepository.GetOrCreateExternalDataId(externalData);
+                        Log.Debug(id.ToString());
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Debug(reader.GetString(0));
+                    Log.Debug(e.Message);
+                }
+            }
+        }
+    }
+}
+
+List<SynchronizationModel> GetDocumentDataList(string? connectionString)
+{
+    List<SynchronizationModel> documentList = new();
 
 
     using (SqlConnection connection = new SqlConnection(connectionString))
     {
-        Log.Debug("------Getting inventory data-------");
+        Log.Debug("------Getting document data-------");
 
         connection.Open();
         string sql = @"SELECT RIGHT(iv.Name, len(iv.Name) - CHARINDEX('_', iv.Name)) as DocumentSerialNumber,
@@ -117,7 +164,7 @@ List<SynchronizationModel> GetInventoryDataList(string? connectionString)
                           FROM TBL_InventoryData iv
                           JOIN TBL_ScannedData sc ON sc.InventoryDataID = iv.ID
 						  JOIN TBL_ExternalData ex ON ex.Barcode = sc.Barcode
-                          WHERE iv.Name LIKE 'Maš_%' AND iv.Status = 'Checked' AND iv.Name NOT LIKE '%ASO%'";
+                          WHERE iv.Name LIKE 'Maš_%' OR iv.Name LIKE 'Mas_%' AND iv.Status = 'Checked'";
 
 
         using (var command = new SqlCommand(sql, connection))
@@ -136,6 +183,7 @@ List<SynchronizationModel> GetInventoryDataList(string? connectionString)
                             Name = reader.GetString(4),
                             Unit = reader.GetString(5),
                             Created = DateTime.Now,
+                            Updated = DateTime.Now
                         };
 
                         var model = new SynchronizationModel()
@@ -148,7 +196,7 @@ List<SynchronizationModel> GetInventoryDataList(string? connectionString)
                         };
 
                         Log.Debug("{model}", model);
-                        inventoryList.Add(model);
+                        documentList.Add(model);
                     }
                 }
                 catch (Exception e)
@@ -159,7 +207,7 @@ List<SynchronizationModel> GetInventoryDataList(string? connectionString)
             }
         }
 
-        return inventoryList;
+        return documentList;
     }
 }
 async Task CreateDocumentsFromInventory(IEnumerable<SynchronizationModel> inventoryList)
@@ -168,7 +216,7 @@ async Task CreateDocumentsFromInventory(IEnumerable<SynchronizationModel> invent
     {
         List<SynchronizationModel> newInventoryList = new();
         bool isSynchronization = true;
-        int managerId = await _employeeRepository.GetEmployeeIdByCode("DPE");
+        int managerId = await _employeeRepository.GetEmployeeIdByCode("KSA");
         int employeeId;
         int documentId;
         string documentName;
@@ -177,7 +225,7 @@ async Task CreateDocumentsFromInventory(IEnumerable<SynchronizationModel> invent
         {
             employeeId = await _employeeRepository.GetEmployeeIdByCode(item.DocumentSerialNumber.Substring(0, 3));
 
-            InventoryDataBaseModel document = new()
+            DocumentDataBaseModel document = new()
             {
                 Employee1Id = managerId,
                 Employee2Id = employeeId,
@@ -187,7 +235,7 @@ async Task CreateDocumentsFromInventory(IEnumerable<SynchronizationModel> invent
                 ManuallyAdded = false,
             };
 
-            var existId = await _inventoryDataRepository.ReturnDocumentIdIfExists(document);
+            var existId = await _documentDataRepository.ReturnDocumentIdIfExists(document);
             if (existId == 0)
                 newInventoryList.Add(item);
         }
@@ -198,17 +246,18 @@ async Task CreateDocumentsFromInventory(IEnumerable<SynchronizationModel> invent
         {
             employeeId = await _employeeRepository.GetEmployeeIdByCode(item.DocumentSerialNumber.Substring(0, 3));
 
-            InventoryDataBaseModel document = new()
+            DocumentDataBaseModel document = new()
             {
                 Employee1Id = managerId,
                 Employee2Id = employeeId,
                 IsSynchronization = isSynchronization,
                 Created = item.DocumentCreated,
                 Updated = item.DocumentCreated,
+                DocumentType = (int)StockTypes.Inventory,
                 ManuallyAdded = false,
             };
 
-            documentId = await _inventoryDataRepository.InsertWithIdentityAsync(document);
+            documentId = await _documentDataRepository.InsertWithIdentityAsync(document);
             documentName = $"Mašīna_{item.DocumentSerialNumber}";
 
             var stockEmployeeData = new StockEmployeesModel()
@@ -217,7 +266,7 @@ async Task CreateDocumentsFromInventory(IEnumerable<SynchronizationModel> invent
                 DocumentSerialNumber = documentName,
                 ExternalDataId = await _externalDataRepository.GetOrCreateExternalDataId(item.ExternalData),
                 EmployeeId = employeeId,
-                StockTypeId = (int)StockTypes.Accepted,
+                StockTypeId = (int)StockTypes.Taken,
                 Quantity = item.Quantity,
                 Created = item.Created,
             };
@@ -226,7 +275,7 @@ async Task CreateDocumentsFromInventory(IEnumerable<SynchronizationModel> invent
             {
                 DocumentSerialNumber = documentName,
                 ExternalDataId = stockEmployeeData.ExternalDataId,
-                InventoryDataId = documentId,
+                DocumentDataId = documentId,
                 Created = stockEmployeeData.Created,
                 Quantity = stockEmployeeData.Quantity,
             };

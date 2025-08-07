@@ -1,12 +1,14 @@
 ﻿using Azure;
 using Microsoft.AspNetCore.Mvc;
-using StockAccounting.Core.Data;
+using StockAccounting.Core.Data.Enums;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 using StockAccounting.Web.Constants;
 using StockAccounting.Web.Extensions;
 using StockAccounting.Web.Services;
 using StockAccounting.Web.Services.Interfaces;
-using StockAccounting.Web.ViewModels;
+using System.Diagnostics;
+using StockAccounting.Core.Data.Models.Data.StockData;
+using static LinqToDB.Common.Configuration;
 
 namespace StockAccounting.Web.Controllers
 {
@@ -29,11 +31,22 @@ namespace StockAccounting.Web.Controllers
             if (pageId < 0)
                 return BadRequest();
 
-            var data = await _stockDataRepository.GetStockDataAsync();
+            PaginatedData<StockDataModel> data;
+
+            if (string.IsNullOrEmpty(searchText) || searchText == "dummyText")
+                data = await _paginationService.PaginatedStocks(pageId, _itemsPerPage);
+            else
+                data = await _paginationService.PaginatedSearchedStocks(pageId, _itemsPerPage, searchText);
 
             var stockDataViewModel = new StockDataViewModel
             {
                 StockDataModel = data,
+                TotalPages = data.TotalPages,
+                PageIndex = data.PageIndex,
+                TotalData = data.TotalData,
+                StartPage = pageId >= _pagesInRow ? pageId - 2 : 1,
+                EndPage = pageId >= _pagesInRow && pageId < data.TotalPages ? pageId + 1 : data.TotalPages > _pagesInRow && pageId < data.TotalPages ? _pagesInRow : data.TotalPages,
+
             };
 
             return View(stockDataViewModel);
@@ -45,16 +58,11 @@ namespace StockAccounting.Web.Controllers
             if (pageId < 0)
                 return BadRequest();
 
-            var items = await _paginationService.PaginatedStockDetails(pageId, _itemsPerPage, id);
+            var items = await _stockDataRepository.GetStockDetailsByIdAsync(id);
 
             var data = new StockEmployeesViewModel
             {
                 StockEmployeesModel = items,
-                TotalPages = items.TotalPages,
-                PageIndex = items.PageIndex,
-                TotalData = items.TotalData,
-                StartPage = pageId >= _pagesInRow ? pageId - 2 : 1,
-                EndPage = pageId >= _pagesInRow && pageId < items.TotalPages ? pageId + 1 : items.TotalPages > _pagesInRow && pageId < items.TotalPages ? _pagesInRow : items.TotalPages,
             };
 
             return View(data);
@@ -88,6 +96,38 @@ namespace StockAccounting.Web.Controllers
                 else
                     this.AddAlertDanger($"{WebConstants.Error} No stocks have been selected.");
                 return BadRequest();
+            }
+        }
+
+        public void RunManualSynchronization()
+        {
+            try
+            {
+                var fileName = "C:\\www\\StockAccounting\\Synchronization\\StockAccounting.Synchronization.exe";
+                var fileInfoName = new FileInfo(fileName);
+
+                if (FileHelper.IsFileInUseGeneric(fileInfoName))
+                {
+                    this.AddAlertDanger($"Synchronization already is in use.");
+                }
+                else
+                {
+                    Process process = new Process();
+
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.FileName = fileName;
+
+                    process.Start();
+                    process.WaitForExit();
+
+                    this.AddAlertSuccess(WebConstants.Success);
+                }
+            }
+            catch (Exception e)
+            {
+                this.AddAlertDanger($"{WebConstants.Error}");
             }
         }
     }

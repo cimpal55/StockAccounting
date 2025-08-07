@@ -3,13 +3,19 @@ $.fn.dataTable.ext.classes.sPageButtonActive = 'active-button-datatable';
 $(document).ready(function () {
 
     var table = $("#employeeTable").DataTable({
-        initComplete: function () {
+        initComplete: function() {
             $('#divTable').show();
         },
         dom: 'lrtip',
         pagingType: "numbers",
-        "drawCallback": function (settings) {
-            $(".paging_numbers a").attr("href", "#")
+        "drawCallback": function(settings) {
+            $(".paging_numbers a")
+                .attr("href", "#")
+                .off("click.preventScroll")
+                .on("click.preventScroll",
+                    function(e) {
+                        e.preventDefault();
+                    });
         },
         autoWidth: false,
         paging: true,

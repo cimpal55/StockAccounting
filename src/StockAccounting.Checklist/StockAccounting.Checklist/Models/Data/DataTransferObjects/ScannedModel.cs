@@ -7,7 +7,7 @@ namespace StockAccounting.Checklist.Models.Data.DataTransferObjects
 {
     public class ScannedModel
     {
-        public InventoryDataModel inventoryData { get; set; }
+        public DocumentDataModel documentData { get; set; }
 
         public ObservableCollection<ExternalDataModel> scannedData { get; set; }
 

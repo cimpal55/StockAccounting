@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Newtonsoft.Json;
-using StockAccounting.Core.Data.Repositories.Alert;
+using StockAccounting.Web.Models.Data.Alert;
 
 namespace StockAccounting.Web.Extensions
 {

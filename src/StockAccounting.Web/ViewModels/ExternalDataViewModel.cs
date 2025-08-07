@@ -1,6 +1,6 @@
-﻿using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Models.Data.ExternalData;
+using StockAccounting.Core.Data.Models.Data.Unit;
 using System.ComponentModel.DataAnnotations;
-using static StockAccounting.Core.Data.Resources.Columns;
 
 namespace StockAccounting.Web.ViewModels
 {

@@ -1,0 +1,72 @@
+﻿@using System.Globalization
+@model EmployeeLeftQuantityViewModel
+@{
+    ViewData["Title"] = "DetailLeftQuantity";
+    IFormatProvider theCultureInfo = new System.Globalization.CultureInfo("lv", true);
+}
+
+<div class="container">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page"><a asp-controller="EmployeeData" asp-action="List">Employees</a></li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <a asp-controller="EmployeeData" asp-action="Details" 
+                       asp-route-id="@Model.EmployeeDetailLeftQuantityModel.Select(x => x.EmployeeId).FirstOrDefault()">
+                        @Model.EmployeeDetailLeftQuantityModel.Select(x => x.Employee).FirstOrDefault()
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    @Model.EmployeeDetailLeftQuantityModel.Select(x => x.Name).FirstOrDefault()
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="fixed-table-container">
+        <table class="table" id="employeeDetailLeftQuantityTable">
+            <thead>
+            <tr>
+                <th>Document</th>
+                <th>Name</th>
+                <th>Barcode</th>
+                <th>ItemNumber</th>
+                <th>PluCode</th>
+                <th>Quantity</th>
+                <th>Type</th>
+                <th>Created</th>
+            </tr>
+            </thead>
+            <tbody>
+            @{
+                System.Diagnostics.Debug.Assert(Model != null, nameof(Model) + " != null");
+                    System.Diagnostics.Debug.Assert(Model.EmployeeDetailLeftQuantityModel != null, "Model.EmployeeDetailLeftQuantityModel != null");
+            }
+            @foreach (var item in Model.EmployeeDetailLeftQuantityModel)
+            {
+                <tr id="data">
+                    @if (item.DocumentNumber != null)
+                    {
+                        <td>@string.Join("", string.Format("{0:000}", item.DocumentNumber), item.DocumentSerialNumber)</td>
+                    }
+                    else
+                    {
+                        <td>@item.DocumentSerialNumber</td>
+                    }
+                    <td>@item.Name</td>
+                    <td>@item.Barcode</td>
+                    <td>@item.ItemNumber</td>
+                    <td>@item.PluCode</td>
+                    <td>@String.Format(CultureInfo.InvariantCulture, "{0:0.00}", Math.Abs(item.Quantity))</td>
+                    <td>@item.StockType</td>
+                    <td>@item.Created.ToString("dd.MM.yyyy HH:mm")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/js/employeeDetailLeftQuantity.js" asp-append-version="true"></script>
+}

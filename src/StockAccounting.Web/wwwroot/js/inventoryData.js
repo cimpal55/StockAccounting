@@ -1,7 +1,7 @@
 ﻿
 $(document).ready(function () {
 
-    var table = $("#inventoryTable").DataTable({
+    var table = $("#InventoryTable").DataTable({
         initComplete: function () {
             $('#divTable').show();
         },
@@ -13,103 +13,15 @@ $(document).ready(function () {
             { width: 250, targets: 0 },
             { width: 250, targets: 1 },
             { width: 200, targets: 2 },
-            { orderable: false, targets: 3 }
+            { width: 200, targets: 3 },
+            { width: 200, targets: 4 },
+            { width: 200, targets: 5 },
+            { orderable: false, targets: 6 }
         ],
-        order: [[2, 'desc']],
+        order: [[2, 'desc']]
     });
 
 });
-
-$("#newInventoryDataButton").on('click',
-    function () {
-        $("#newInventoryDataModal").modal('show');
-
-        $("#inventoryDataModalClose").click(function () {
-            $("#newInventoryDataModal").modal('hide');
-        });
-
-        $("#inventoryDataModalComplete").submit(function () {
-
-            var postData = $("#inventoryDataModalForm").serialize();
-
-            $.ajax({
-                type: "post",
-                url: "/InsertInventoryData",
-                dataType: "json",
-                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                data: postData,
-                success: function () {
-                    $("#newInventoryDataModal").modal('hide');
-                },
-                error: function () {
-                    window.location.reload();
-                }
-            });
-        });
-});
-
-$('#editInventoryDataModal').on('show.bs.modal',
-    function (event) {
-        var button = $(event.relatedTarget);
-        var id = button.data('id');
-        var employee1Id = button.data('employee1id');
-        var employee2Id = button.data('employee2id');
-        var created = button.data('created');
-
-        var modal = $(this);
-        modal.find('#id').val(id);
-        modal.find('#employee1Id').val(employee1Id);
-        modal.find('#employee2Id').val(employee2Id);
-        modal.find('#created').val(created);
-
-        $("#inventoryDataModalComplete").submit(function () {
-
-            var postData = $("#inventoryDataModalForm").serialize();
-
-            $.ajax({
-                type: "post",
-                url: "/UpdateInventoryData",
-                dataType: "json",
-                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                data: postData
-            })
-                .done(function () {
-                    $("#editInventoryDataModal").modal('hide');
-                })
-                .fail(function () {
-                    window.location.reload();
-                });
-        });
-    });
-
-
-$('#deleteInventoryDataModal').on('show.bs.modal',
-    function (event) {
-        var button = $(event.relatedTarget);
-        var id = button.data('id');
-
-        var modal = $(this);
-        modal.find('#id').val(id);
-
-        $("#btnYes").click(function () {
-            $.ajax({
-                type: "post",
-                url: "/DeleteInventoryData",
-                dataType: "json",
-                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                data: {
-                    Id: id
-                }
-            })
-                .done(function () {
-                    $("#deleteInventoryDataModal").modal('hide');
-                    $("#data_" + id).remove();
-                })
-                .fail(function () {
-                    window.location.reload();
-                });
-        });
-    });
 
 var dateFormat = function () {
     var token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,

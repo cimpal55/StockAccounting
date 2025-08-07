@@ -2,7 +2,7 @@
 
 <div id="scannedDataModal" class="modal-body">
     <form asp-action="InsertScannedData" asp-controller="ScannedData" data-ajax-method="POST" data-ajax="true" data-ajax-complete="scannedDataModalComplete">
-        <div id="newScannedDataModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static">
+        <div id="newScannedDataModal" class="modal fade" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -10,7 +10,7 @@
                     </div>
                     <div class="modal-body" id="scannedDataModalDetails">
                         <div class="form-group">
-                            <input type="hidden" asp-for="InventoryDataId" value="@Model.InventoryDataId" />
+                            <input type="hidden" asp-for="DocumentDataId" value="@Model.DocumentDataId" />
                             <label class="control-label"><b>Stock</b></label>
                             <select id="selectExternalData" asp-for="ExternalDataId" class="form-control" style="width: 100%;">
                                 <option value="0" selected="selected">-Choose-</option>

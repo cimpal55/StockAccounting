@@ -1,19 +1,18 @@
 ﻿using LinqToDB.Mapping;
 using StockAccounting.Core.Data.Resources;
-using static StockAccounting.Core.Data.Resources.Columns;
 
-namespace StockAccounting.Core.Data.Models.Data
+namespace StockAccounting.Core.Data.Models.Data.Unit
 {
     [Table(Tables.Unit)]
     public record UnitModel
     {
-        [Column(Unit.Id, IsPrimaryKey = true, IsIdentity = true)]
+        [Column(Columns.Unit.Id, IsPrimaryKey = true, IsIdentity = true)]
         public int Id { get; set; }
 
-        [Column(Unit.Name, CanBeNull = false)]
+        [Column(Columns.Unit.Name, CanBeNull = false)]
         public string Name { get; set; } = string.Empty;
 
-        [Column(Unit.Created, CanBeNull = false)]
+        [Column(Columns.Unit.Created, CanBeNull = false)]
         public DateTime Created { get; set; }
     }
 }

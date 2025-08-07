@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StockAccounting.Api.Repositories.Interfaces;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Models.Data.EmployeeData;
 
 namespace StockAccounting.Api.Controllers
 {

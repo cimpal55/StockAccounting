@@ -1,7 +1,7 @@
 ﻿using LinqToDB;
 using StockAccounting.Api.Repositories.Interfaces;
 using StockAccounting.Core.Data.DbAccess;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Models.Data.ExternalData;
 
 namespace StockAccounting.Api.Repositories
 {

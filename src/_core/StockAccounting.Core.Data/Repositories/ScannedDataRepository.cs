@@ -1,13 +1,16 @@
 ﻿using LinqToDB;
 using LinqToDB.Data;
 using Serilog;
-using StockAccounting.Core.Data.DbAccess;
-using StockAccounting.Core.Data.Models.Data;
-using StockAccounting.Core.Data.Models.DataTransferObjects;
-using StockAccounting.Core.Data.Repositories.Interfaces;
 using System.Security.Cryptography.X509Certificates;
 using static LinqToDB.Common.Configuration;
-using static StockAccounting.Core.Data.Resources.Columns;
+using StockAccounting.Core.Data.DbAccess;
+using StockAccounting.Core.Data.Enums;
+using StockAccounting.Core.Data.Models.Data.Excel;
+using StockAccounting.Core.Data.Models.Data.ScannedData;
+using StockAccounting.Core.Data.Models.Data.StockData;
+using StockAccounting.Core.Data.Models.Data.StockEmployees;
+using StockAccounting.Core.Data.Models.DataTransferObjects;
+using StockAccounting.Core.Data.Repositories.Interfaces;
 
 namespace StockAccounting.Core.Data.Repositories
 {
@@ -37,13 +40,13 @@ namespace StockAccounting.Core.Data.Repositories
         {
             var query = from sd in _conn.ScannedData
                         join ex in _conn.ExternalData on sd.ExternalDataId equals ex.Id
-                        join iv in _conn.InventoryData on sd.InventoryDataId equals iv.Id
+                        join iv in _conn.DocumentData on sd.DocumentDataId equals iv.Id
                         join em1 in _conn.Employees on iv.Employee1Id equals em1.Id
                         join em2 in _conn.Employees on iv.Employee2Id equals em2.Id
                         where iv.IsSynchronization == true
                         select new SynchronizationModel
                         {
-                            Barcode = ex.Barcode, 
+                            Barcode = ex.Barcode,
                             Employee = string.Join(" ", em2.Name, em2.Surname),
                         };
 
@@ -54,7 +57,9 @@ namespace StockAccounting.Core.Data.Repositories
         {
             try
             {
-                List<int> stocksSynchronization = new();
+                int employeeId;
+                List<int> stocksUpdatedSynchronization = new();
+                List<int> stocksAddedSynchronization = new();
                 StockDataBaseModel? stockData = new();
                 foreach (var item in barcodes)
                 {
@@ -72,19 +77,45 @@ namespace StockAccounting.Core.Data.Repositories
                         .Employees
                         .FirstOrDefaultAsync(x => x.Code == item.Employee);
 
+                    if (employee == null)
+                    {
+                        continue;
+                        //string code = !String.IsNullOrWhiteSpace(item.DocumentNumber) && item.DocumentNumber.Length > 2 ? item.DocumentNumber.Substring(0, 3) : null;
+                        //if (code == null)
+                        //{
+                        //    continue;
+                        //}
+
+                        //var model = await _conn
+                        //    .Employees
+                        //    .FirstOrDefaultAsync(x => x.Code == code);
+
+                        //if (model == null)
+                        //{
+                        //    continue;
+                        //}
+
+                        //employeeId = model.Id;
+                    }
+                    else
+                    {
+                        employeeId = employee.Id;
+                    }
+
                     stockData = await _conn
                         .StockData
                         .FirstOrDefaultAsync(x => x.ExternalDataId == externalData.Id);
 
                     if (stockData != null && stockData.LastSynchronization < item.Created)
                     {
-                        if (!stocksSynchronization.Contains(stockData.Id))
-                            stocksSynchronization.Add(stockData.Id);
+                        Log.Debug("Stock for external data: {0} exists", externalData.Id);
+                        if (!stocksUpdatedSynchronization.Contains(stockData.Id))
+                            stocksUpdatedSynchronization.Add(stockData.Id);
 
                         StockEmployeesBaseModel stockEmployee = new StockEmployeesBaseModel
                         {
                             DocumentSerialNumber = item.DocumentSerialNumber + item.DocumentNumber,
-                            EmployeeId = employee.Id,
+                            EmployeeId = employeeId,
                             StockDataId = stockData.Id,
                             StockTypeId = (int)StockTypes.Used,
                             Quantity = item.Quantity * -1,
@@ -94,7 +125,7 @@ namespace StockAccounting.Core.Data.Repositories
 
                         await _conn.InsertAsync(stockEmployee);
                         Log.Debug("Stock employees model was inserted: {0}", stockEmployee);
-                        Log.Debug("External data with barcode {0} successfully synchronized", item.Barcode);
+                        Log.Information("External data with barcode {0} successfully synchronized", item.Barcode);
 
                         stockData.Quantity = stockData.Quantity - item.Quantity;
                         await _conn.UpdateAsync(stockData);
@@ -102,6 +133,7 @@ namespace StockAccounting.Core.Data.Repositories
                     }
                     else if (stockData == null)
                     {
+                        Log.Debug("Stock data for external data with ID: {0} doesn't exist", externalData.Id);
                         stockData = new StockDataBaseModel
                         {
                             ExternalDataId = externalData.Id,
@@ -111,6 +143,7 @@ namespace StockAccounting.Core.Data.Repositories
                         };
 
                         var stockDataId = await _conn.InsertWithInt32IdentityAsync(stockData);
+                        Log.Debug("Created new stock data with ID: {0}", stockDataId);
 
                         StockEmployeesBaseModel stockEmployee = new StockEmployeesBaseModel
                         {
@@ -125,10 +158,10 @@ namespace StockAccounting.Core.Data.Repositories
 
                         await _conn.InsertAsync(stockEmployee);
 
-                        if(!stocksSynchronization.Contains(stockDataId))
-                            stocksSynchronization.Add(stockDataId);
+                        if (!stocksAddedSynchronization.Contains(stockDataId))
+                            stocksAddedSynchronization.Add(stockDataId);
 
-                        Log.Debug("External data with barcode {0} successfully synchronized", item.Barcode);
+                        Log.Information("External data with barcode {0} successfully synchronized", item.Barcode);
                         continue;
                     }
                     else
@@ -138,52 +171,69 @@ namespace StockAccounting.Core.Data.Repositories
                     }
                 }
 
-                Log.Debug("Were synchronized {0} stocks", stocksSynchronization.Count);
-
-                foreach (var id in stocksSynchronization)
+                foreach (var id in stocksUpdatedSynchronization)
                 {
-
                     var stock = await _conn
                         .StockData
                         .Where(x => x.Id == id)
                         .FirstOrDefaultAsync();
 
                     stock.LastSynchronization = DateTime.Now;
-                    
+
                     await _conn
                         .UpdateAsync(stock);
 
                     Log.Debug("Updated stock with id '{0}' last synchronization date", stock.Id);
                 }
 
+                foreach (var id in stocksAddedSynchronization)
+                {
+                    var stock = await _conn
+                        .StockData
+                        .Where(x => x.Id == id)
+                        .FirstOrDefaultAsync();
+
+                    stock.LastSynchronization = DateTime.Now;
+
+                    await _conn
+                        .UpdateAsync(stock);
+
+                    Log.Debug("Added new stock with id '{0}'", stock.Id);
+                }
+
                 await _conn.CommitTransactionAsync();
+
+                Log.Information("--------- Were synchronized {0} stocks", stocksUpdatedSynchronization.Count + stocksAddedSynchronization.Count);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Log.Error(ex.Message);
             }
         }
 
-        public async Task<IEnumerable<ScannedDataModel>> GetScannedDataByDocumentIdAsync(int inventoryDataId)
+        public IQueryable<ScannedDataModel> GetScannedDataByDocumentIdQueryable(int documentDataId)
         {
             var query = from sd in _conn.ScannedData
-                        join ex in _conn.ExternalData on sd.ExternalDataId equals ex.Id
-                        where sd.InventoryDataId == inventoryDataId
-                        select new ScannedDataModel
-                        {
-                            Id = sd.Id,
-                            DocumentNumber = sd.DocumentNumber,
-                            DocumentSerialNumber = sd.DocumentSerialNumber,
-                            ExternalDataId = sd.ExternalDataId,
-                            Name = ex.Name,
-                            ItemNumber = ex.ItemNumber,
-                            PluCode = ex.PluCode,
-                            InventoryDataId = sd.Id,
-                            Quantity = sd.Quantity,
-                        };
+                join ex in _conn.ExternalData on sd.ExternalDataId equals ex.Id
+                where sd.DocumentDataId == documentDataId
+                select new ScannedDataModel
+                {
+                    Id = sd.Id,
+                    DocumentNumber = sd.DocumentNumber,
+                    DocumentSerialNumber = sd.DocumentSerialNumber,
+                    ExternalDataId = sd.ExternalDataId,
+                    Name = ex.Name,
+                    ItemNumber = ex.ItemNumber,
+                    PluCode = ex.PluCode,
+                    DocumentDataId = sd.Id,
+                    Quantity = sd.Quantity,
+                    Created = sd.Created,
+                    InventoryDataId = sd.InventoryDataId
+                };
 
-            return await query.ToListAsync();
+            return query;
         }
+
 
         public string FileExportMode(FileExport mode)
         {
@@ -194,8 +244,8 @@ namespace StockAccounting.Core.Data.Repositories
 	                                 (em.Name + ' ' + em.Surname + ' ' + em.Code) as Employee,
                                      ex.Name as Name, ex.Barcode, ex.ItemNumber,
                                      ex.PluCode, SUM(sc.Quantity) as Quantity, sc.Created
-                                       FROM TBL_InventoryData iv
-                                       JOIN TBL_ScannedData sc ON iv.ID = sc.InventoryDataID
+                                       FROM TBL_DocumentData iv
+                                       JOIN TBL_ScannedData sc ON iv.ID = sc.DocumentDataID
                                        JOIN TBL_ExternalData ex on sc.ExternalDataId = ex.ID
             				  	       JOIN TBL_CONF_Employees em on em.ID = iv.Employee2ID
 									   JOIN TBL_CONF_Employees em2 on em2.ID = iv.Employee1ID
@@ -211,7 +261,7 @@ namespace StockAccounting.Core.Data.Repositories
                                     exn.Name as Name, exn.Barcode, exn.ItemNumber, exn.PluCode,
                                     scn.Quantity, scn.Created
 			                            FROM TBL_ScannedData scn
-			                            JOIN TBL_InventoryData inv on inv.ID = scn.InventoryDataID
+			                            JOIN TBL_DocumentData inv on inv.ID = scn.DocumentDataID
 			                            JOIN TBL_ExternalData exn on scn.ExternalDataId = exn.ID
 			                            JOIN TBL_CONF_Employees em on em.ID = inv.Employee1ID
 										JOIN TBL_CONF_Employees em2 ON em2.ID = inv.Employee2ID
@@ -231,8 +281,8 @@ namespace StockAccounting.Core.Data.Repositories
 									   (em.Name + ' ' + em.Surname + ' ' + em.Code) as Employee,
                                        ex.Name as Name, ex.ItemNumber, ex.Barcode,
                                        ex.PluCode, sc.Quantity as LeftQuantity, sc.Created
-                                         FROM TBL_InventoryData iv
-                                         JOIN TBL_ScannedData sc ON iv.ID = sc.InventoryDataID
+                                         FROM TBL_DocumentData iv
+                                         JOIN TBL_ScannedData sc ON iv.ID = sc.DocumentDataID
                                          JOIN TBL_ExternalData ex ON sc.ExternalDataId = ex.ID
             	                         JOIN TBL_CONF_Employees em ON em.ID = iv.Employee2ID
 										 JOIN TBL_CONF_Employees em2 ON em2.ID = iv.Employee1ID
@@ -243,7 +293,7 @@ namespace StockAccounting.Core.Data.Repositories
                                LEFT JOIN
                                (SELECT exn.Name as Name, scn.Quantity as ReturnQuantity
                                       FROM TBL_ScannedData scn
-                                      JOIN TBL_InventoryData inv ON inv.ID = scn.InventoryDataID
+                                      JOIN TBL_DocumentData inv ON inv.ID = scn.DocumentDataID
                                       JOIN TBL_ExternalData exn ON scn.ExternalDataId = exn.ID
                                       WHERE inv.IsSynchronization = 0 AND inv.Employee1ID IN (employeesToReplace)
                                       GROUP BY exn.Name, scn.Quantity) as t2 ON t2.Name = t1.Name
@@ -261,21 +311,21 @@ namespace StockAccounting.Core.Data.Repositories
                 .ConfigureAwait(false);
         }
 
-        public bool IsSynchronizationDocument(int inventoryDataId)
+        public bool IsSynchronizationDocument(int documentDataId)
         {
-            var query = from iv in _conn.InventoryData
-                        where iv.Id == inventoryDataId
+            var query = from iv in _conn.DocumentData
+                        where iv.Id == documentDataId
                         select iv.IsSynchronization;
 
             return query.FirstOrDefault();
         }
 
-        public int ReturnDocumentEmployees(int inventoryDataId)
+        public int ReturnDocumentEmployees(int documentDataId)
         {
-            var synchronization = IsSynchronizationDocument(inventoryDataId);
+            var synchronization = IsSynchronizationDocument(documentDataId);
 
-            var query = from iv in _conn.InventoryData
-                        where iv.Id == inventoryDataId
+            var query = from iv in _conn.DocumentData
+                        where iv.Id == documentDataId
                         select (synchronization ? iv.Employee2Id : iv.Employee1Id);
 
             return query.FirstOrDefault();
@@ -290,7 +340,7 @@ namespace StockAccounting.Core.Data.Repositories
             return query.FirstOrDefault();
         }
 
-        public async Task<Dictionary<string, string>> GetDocumentNumber(int employeeId, int inventoryDataId)
+        public async Task<Dictionary<string, string>> GetDocumentNumber(int employeeId, int documentDataId)
         {
 
             string? employeeCode;
@@ -304,7 +354,7 @@ namespace StockAccounting.Core.Data.Repositories
                         .Select(x => x.Code)
                         .FirstOrDefaultAsync();
 
-            checkIfExists = await _conn.ScannedData.Where(x => x.InventoryDataId == inventoryDataId)
+            checkIfExists = await _conn.ScannedData.Where(x => x.DocumentDataId == documentDataId)
                                                    .Take(1)
                                                    .Select(x => x.DocumentNumber)
                                                    .FirstOrDefaultAsync();
@@ -334,11 +384,17 @@ namespace StockAccounting.Core.Data.Repositories
             return dict;
         }
 
-        public async Task<StockEmployeesBaseModel> GetStockEmployeeByScannedData(ScannedDataBaseModel model) =>
-            await _conn
-                .StockEmployees
-                .Where(x => x.DocumentSerialNumber + x.DocumentNumber == model.DocumentSerialNumber + model.DocumentNumber)
-                .Where(x => x.Created.AddMilliseconds(-x.Created.Millisecond) == model.Created.AddMilliseconds(-model.Created.Millisecond))
-                .FirstOrDefaultAsync() ?? new StockEmployeesBaseModel();
+        public async Task<StockEmployeesBaseModel> GetStockEmployeeByScannedData(ScannedDataBaseModel model)
+        {
+            var targetTime = model.Created;
+            var delta = TimeSpan.FromSeconds(2);
+
+            return await _conn.StockEmployees
+                .Where(x => x.DocumentSerialNumber == model.DocumentSerialNumber)
+                .Where(x => x.DocumentNumber == model.DocumentNumber)
+                .Where(x => x.Created >= targetTime - delta && x.Created <= targetTime + delta)
+                .FirstOrDefaultAsync();
+
+        }
     }
 }

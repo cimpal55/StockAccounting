@@ -10,25 +10,27 @@
 <div id="editScannedDataModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form asp-action="UpdateScannedData" asp-controller="ScannedData" data-ajax-method="POST" data-ajax="true" data-ajax-complete="scannedDataModalComplete" novalidate>
+            <form id="scannedDataModalForm" asp-action="UpdateScannedData" asp-controller="ScannedData" data-ajax-method="POST" data-ajax="true" data-ajax-complete="scannedDataModalComplete" novalidate>
                 <div class="modal-header">
                     <h5 class="modal-title">Edit scanned data</h5>
                 </div>
                 <div class="modal-body" id="scannedDataModalDetails">
-                    <input type="hidden" name="Id" class="form-control" id="id" value="@Model.Id" />
-                    <input type="hidden" name="InventoryDataId" class="form-control" id="inventoryDataId" value="@Model.InventoryDataId" />
-                    <input type="hidden" name="PageId" class="form-control" id="pageId" value="@pageId" />
-                    <div class="form-group">
+                    <input type="hidden" name="Id" id="id" value="@Model.Id" />
+                    <input type="hidden" name="DocumentDataId" id="documentDataId" value="@Model.DocumentDataId" />
+                    <input type="hidden" name="PageId" id="pageId" value="@pageId" />
+                    <input type="hidden" name="Quantity" id="quantityBefore" value="@Model.Quantity" />
+                    <input type="hidden" name="ExternalDataId" id="externalDataId" value="@Model.ExternalDataId"/>
+@*                     <div class="form-group">
                         <label asp-for="ExternalDataId" class="control-label"><b>Stock</b></label>
-                        <select id="externalDataId" name="UpdateExternalData" asp-for="ExternalDataId" class="form-control" style="width: 100%;">
+                        <select id="externalDataId" name="ExternalDataId" asp-for="ExternalDataId" class="form-control" style="width: 100%;">
                             <option value="0" selected="selected">-Choose-</option>
                         </select>
                         <span asp-validation-for="ExternalDataId" class="text-danger"></span>
-                    </div>
+                    </div> *@
                     <div class="form-group">
-                        <label asp-for="Quantity" class="control-label"><b>Quantity</b></label>
-                        <input asp-for="Quantity" name="UpdateQuantity" class="form-control" type="number" />
-                        <span asp-validation-for="Quantity" class="text-danger"></span>
+                        <label asp-for="QuantityString" class="control-label"><b>Quantity</b></label>
+                        <input asp-for="QuantityString" id="quantity" class="form-control" type="number" />
+                        <span asp-validation-for="QuantityString" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -39,3 +41,4 @@
         </div>
     </div>
 </div>
+

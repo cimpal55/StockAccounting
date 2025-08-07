@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>       
+<views:ViewBase 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:svm="clr-namespace:StockAccounting.Inventory.ViewModels"
+    xmlns:views="clr-namespace:StockAccounting.Inventory.Views"
+    x:Class="StockAccounting.Inventory.Views.EmployeeView"
+    x:DataType="svm:EmployeeViewModel">
+
+    <Shell.TitleView>
+        <Grid>
+            <Label
+                FontSize="15"
+                VerticalOptions="Center"
+                TextColor="Black"
+                FontAttributes="Bold"
+                Text="{Binding ViewTitle}"/>
+        </Grid>
+    </Shell.TitleView>
+
+    <ContentPage.Content>
+        <StackLayout>
+            <Picker
+                Title="Employee1"
+                HeightRequest="50"
+                ItemsSource="{Binding Employees}"
+                SelectedItem="{Binding SelectedEmployee1, Mode=TwoWay}"
+                ItemDisplayBinding="{Binding DisplayName}"/>
+
+            <Picker
+                Title="Employee2"
+                HeightRequest="50"
+                ItemsSource="{Binding Employees}"
+                SelectedItem="{Binding SelectedEmployee2, Mode=TwoWay}"
+                ItemDisplayBinding="{Binding DisplayName}"/>
+
+            <Label Margin="0,40,0,0"
+                FontSize="20"
+                HorizontalOptions="Center"
+                VerticalOptions="Start"
+                FontAttributes="Bold"   
+                Text="Stocks of employee"/>
+
+            <Picker
+                Title="Employee being scanned"
+                HeightRequest="50"
+                ItemsSource="{Binding Employees}"
+                SelectedItem="{Binding SelectedScannedEmployee, Mode=TwoWay}"
+                ItemDisplayBinding="{Binding DisplayName}"/>
+
+            <Button
+                Text="Save"
+                Command="{Binding Save}"/>
+        </StackLayout>
+    </ContentPage.Content>
+</views:ViewBase>

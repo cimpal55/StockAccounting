@@ -1,0 +1,78 @@
+﻿@using System.Globalization
+@model InventoryDetailsViewModel
+@{
+    ViewData["Title"] = "InventoryDetails";
+    IFormatProvider theCultureInfo = new System.Globalization.CultureInfo("lv", true);
+}
+
+<div class="container">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page"><a asp-controller="InventoryData" asp-action="List">Inventory</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.InventoryDetailsModel.Select(x => x.Name).FirstOrDefault()</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="fixed-table-container">
+        <table class="table" id="inventoryDetailsTable">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>ItemNumber</th>
+                <th>PluCode</th>
+                <th>Barcode</th>
+                <th>Unit</th>
+                <th>Quantity before</th>
+                <th>Final quantity</th>
+                <th>Difference</th>
+            </tr>
+            </thead>
+            <tbody>
+            @{
+                System.Diagnostics.Debug.Assert(Model != null, nameof(Model) + " != null");
+                System.Diagnostics.Debug.Assert(Model.InventoryDetailsModel != null, "Model.InventoryDetailsModel != null");
+            }
+            @foreach (var item in Model.InventoryDetailsModel)
+            {
+                <tr id="data_@item.Id">
+                    <td>@item.Name</td>
+                    <td>@item.ItemNumber</td>
+                    <td>@item.PluCode</td>
+                    <td>@item.Barcode</td>
+                    <td>@item.Unit</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.FinalQuantity</td>
+                    <td>@Math.Abs(item.FinalQuantity - item.Quantity)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        
+        <div class="mb-3">
+            <!-- Red Filter Tumbler -->
+            <div class="form-check form-switch mb-3" style="margin-top: 40px" id="filterRedContainer">
+                <input class="form-check-input" type="checkbox" id="filterRedSwitch" role="switch" checked>
+                <label class="form-check-label" for="filterRedSwitch">Show Red (Final quantity less than previous)</label>
+            </div>
+
+            <!-- Green Filter Tumbler -->
+            <div class="form-check form-switch mb-3" id="filterGreenContainer">
+                <input class="form-check-input" type="checkbox" id="filterGreenSwitch" role="switch" checked>
+                <label class="form-check-label" for="filterGreenSwitch">Show Green (Final quantity more than previous)</label>
+            </div>
+
+            <!-- Simple Filter Tumbler -->
+            <div class="form-check form-switch mb-3" id="filterSimpleContainer">
+                <input class="form-check-input" type="checkbox" id="filterSimpleSwitch" role="switch" checked>
+                <label class="form-check-label" for="filterSimpleSwitch">Show Simple (Quantity equals)</label>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/inventoryDetails.js" asp-append-version="true"></script>
+}

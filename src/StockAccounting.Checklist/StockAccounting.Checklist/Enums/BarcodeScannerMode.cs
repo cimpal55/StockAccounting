@@ -8,6 +8,6 @@ namespace StockAccounting.Checklist.Enums
     {
         First,
         Second,
-        Inventory,
+        Document,
     }
 }

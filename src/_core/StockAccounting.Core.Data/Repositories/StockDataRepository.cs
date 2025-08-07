@@ -1,11 +1,12 @@
 ﻿using LinqToDB;
 using LinqToDB.Data;
 using StockAccounting.Core.Data.DbAccess;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Enums;
 using StockAccounting.Core.Data.Models.Data.Excel;
+using StockAccounting.Core.Data.Models.Data.StockData;
+using StockAccounting.Core.Data.Models.Data.StockEmployees;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 using static LinqToDB.Common.Configuration;
-using static StockAccounting.Core.Data.Resources.Columns;
 
 namespace StockAccounting.Core.Data.Repositories
 {
@@ -17,18 +18,63 @@ namespace StockAccounting.Core.Data.Repositories
             _conn = conn;
         }
 
-        public async Task<IEnumerable<StockDataModel>> GetStockDataAsync()
+        public IQueryable<StockDataModel> GetStockDataQueryable()
         {
-            var sql = @"SELECT st.ID, ex.Name, ex.Barcode, ex.Unit,
+            const string sql = @"SELECT st.ID, st.ExternalDataID, st.Created, st.LastSynchronization,
+	   0 as EmployeeId, '' as Employee,
+	   ex.Name, ex.Barcode, ex.Unit, ex.PluCode,
+	   ex.ItemNumber, st.Quantity as LeftQuantity, st.Quantity
+                        FROM TBL_StockData st
+                        JOIN TBL_ExternalData ex ON st.ExternalDataID = ex.ID
+                        JOIN (SELECT DISTINCT StockDataID FROM TBL_Stock_Employees) ste ON ste.StockDataID = st.ID
+                        GROUP BY st.ID, ex.Name, ex.Barcode, ex.PluCode,
+						         ex.ItemNumber, ex.Unit, st.Quantity,
+								 st.LastSynchronization, st.Created, st.ExternalDataID
+";
+
+            return _conn.FromSql<StockDataModel>(sql);
+        }
+
+        public IQueryable<StockDataModel> GetStockDataSearchTextQueryable(string searchText)
+        {
+            var sql = @$"SELECT st.ID, ex.Name, ex.Barcode, ex.Unit,
+                               st.ExternalDataID, st.Quantity, st.LastSynchronization,
+                               st.Created, 0 as EmployeeId, '' as Employee,
                                ex.PluCode, ex.ItemNumber, st.Quantity as LeftQuantity
                         FROM TBL_StockData st
                         JOIN TBL_ExternalData ex ON st.ExternalDataID = ex.ID
-						JOIN TBL_Stock_Employees ste ON ste.StockDataID = st.ID
-                        GROUP BY st.ID, ex.Name, ex.Barcode, ex.PluCode, ex.ItemNumber,
-                                 ex.Unit, st.Quantity";
+                        JOIN (SELECT DISTINCT StockDataID FROM TBL_Stock_Employees) ste ON ste.StockDataID = st.ID
+                        WHERE ex.Name LIKE '%{searchText}%'
+                        OR ex.Barcode LIKE '%{searchText}%'
+                        OR ex.PluCode LIKE '%{searchText}%'
+                        OR ex.ItemNumber LIKE '%{searchText}%'
+                        GROUP BY st.ID, ex.Name, ex.Barcode, ex.PluCode,
+                                 ex.ItemNumber, ex.Unit, st.Quantity,
+                                 st.ExternalDataID, st.Quantity, st.LastSynchronization,
+                                 st.Created
+";
+            return _conn.FromSql<StockDataModel>(sql);
+        }
 
-            return await _conn.QueryToListAsync<StockDataModel>(sql)
-                .ConfigureAwait(false);
+        public IQueryable<StockEmployeesModel> GetStockDetailsByIdQueryable(int id)
+        {
+            var sql = @$"SELECT (em.Name + ' ' + em.Surname + ' ' + em.Code) as Employee,
+                                st.*,
+	                            ABS(st.Quantity) as Quantity, stt.Name as Type,
+								st.Created, ex.Name as StockName
+		                FROM TBL_Stock_Employees st
+		                JOIN TBL_CONF_Employees em ON st.EmployeeID = em.ID
+						JOIN TBL_StockTypes stt ON st.StockTypeID = stt.ID
+						JOIN TBL_StockData sd ON sd.ID = st.StockDataID
+						JOIN TBL_ExternalData ex ON ex.ID = sd.ExternalDataID
+                        WHERE st.StockDataID = {id}
+		                GROUP BY em.ID, st.Quantity, stt.Name, st.Created, ex.Name,
+                                 st.DocumentSerialNumber, st.DocumentNumber, st.ID,
+                                 st.EmployeeID, st.LastSynchronization, st.StockTypeID,
+                                 st.StockDataID, st.Created,
+                                 (em.Name + ' ' + em.Surname + ' ' + em.Code)";
+
+            return _conn.FromSql<StockEmployeesModel> (sql);
         }
 
         public async Task<IEnumerable<StockEmployeesModel>> GetStockDetailsByIdAsync(int id)
@@ -72,6 +118,44 @@ namespace StockAccounting.Core.Data.Repositories
                 .ConfigureAwait(false);
         }
 
+        public async Task InsertStockDataAfterInventory(StockEmployeesModel stockEmployeeData)
+        {
+            int stockId;
+            var stock = await CheckIfStockExists(stockEmployeeData.ExternalDataId);
+
+            if (stock == null)
+            {
+                stockId = await _conn.StockData
+                    .InsertWithInt32IdentityAsync(() => new StockDataBaseModel
+                    {
+                        ExternalDataId = stockEmployeeData.ExternalDataId,
+                        Quantity = stockEmployeeData.Quantity,
+                        LastSynchronization = DateTime.Now,
+                        Created = DateTime.Now,
+                    });
+
+                stockEmployeeData.StockDataId = stockId;
+            }
+            else
+            {
+                stockEmployeeData.StockDataId = stock.Id;
+                stock.Quantity += stockEmployeeData.Quantity;
+
+                await _conn.UpdateAsync(stock);
+            }
+
+            await _conn.StockEmployees
+                .InsertAsync(() => new StockEmployeesBaseModel
+                {
+                    DocumentSerialNumber = stockEmployeeData.DocumentSerialNumber,
+                    EmployeeId = stockEmployeeData.EmployeeId,
+                    Quantity = stockEmployeeData.Quantity,
+                    StockDataId = stockEmployeeData.StockDataId,
+                    StockTypeId = stockEmployeeData.StockTypeId,
+                    Created = stockEmployeeData.Created
+                });
+        }
+
         public async Task InsertStockData(StockEmployeesModel stockEmployeeData)
         {
             int stockId;
@@ -93,7 +177,7 @@ namespace StockAccounting.Core.Data.Repositories
 
                 stockEmployeeData.StockDataId = stockId;
             }
-            else 
+            else
             {
                 stockEmployeeData.StockDataId = stock.Id;
                 stock.Quantity += stockEmployeeData.Quantity;
@@ -110,6 +194,28 @@ namespace StockAccounting.Core.Data.Repositories
                 .Value(x => x.Quantity, stockEmployeeData.Quantity)
                 .Value(x => x.Created, stockEmployeeData.Created)
                 .InsertAsync();
+        }
+
+        public async Task EditStockData(StockEmployeesModel stockEmployeeData, decimal quantityBefore)
+        {
+            int stockId;
+            var stock = await CheckIfStockExists(stockEmployeeData.ExternalDataId);
+            var delta = stockEmployeeData.Quantity - quantityBefore;
+
+            if (!stockEmployeeData.IsSynchronization)
+                delta *= -1;
+
+            stockEmployeeData.StockDataId = stock.Id;
+            stock.Quantity += delta;
+
+            await _conn.UpdateAsync(stock);
+
+            await _conn.StockEmployees
+                .Where(x => x.DocumentNumber == stockEmployeeData.DocumentNumber
+                                && x.DocumentSerialNumber == stockEmployeeData.DocumentSerialNumber
+                                && x.StockDataId == stock.Id)
+                .Set(x => x.Quantity, stockEmployeeData.Quantity)
+                .UpdateAsync();
         }
 
         public string FileExportMode(FileExport mode)
@@ -162,7 +268,8 @@ namespace StockAccounting.Core.Data.Repositories
             await _conn.UpdateAsync(stock);
         }
 
-        public async Task<IEnumerable<StockEmployeesModel>> GetStockLeftQuantity(int stockDataId) {
+        public async Task<IEnumerable<StockEmployeesModel>> GetStockLeftQuantity(int stockDataId)
+        {
             string sql = $@"SELECT (em.Name + ' ' + em.Surname + ' ' + em.Code) as Employee,
 	                            SUM(st.Quantity) as Quantity, ex.Name as StockName
 		                FROM TBL_Stock_Employees st
@@ -172,7 +279,7 @@ namespace StockAccounting.Core.Data.Repositories
 						WHERE st.StockDataID = {stockDataId}
 		                GROUP BY st.StockDataID, ex.Name,
                                  (em.Name + ' ' + em.Surname + ' ' + em.Code)";
-            
+
             return await _conn.QueryToListAsync<StockEmployeesModel>(sql)
                 .ConfigureAwait(false);
         }

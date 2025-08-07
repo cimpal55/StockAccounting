@@ -1,4 +1,5 @@
-﻿using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Models.Data.ExternalData;
+using StockAccounting.Core.Data.Models.Data.ScannedData;
 using System.ComponentModel.DataAnnotations;
 
 namespace StockAccounting.Web.ViewModels
@@ -13,7 +14,7 @@ namespace StockAccounting.Web.ViewModels
         [Required(ErrorMessage = "External data is required!")]
         public int ExternalDataId { get; set; }
 
-        public int InventoryDataId { get; set; }
+        public int DocumentDataId { get; set; }
 
         public decimal Quantity { get; set; }
 

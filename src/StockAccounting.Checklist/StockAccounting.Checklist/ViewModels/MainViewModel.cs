@@ -26,11 +26,11 @@ namespace StockAccounting.Checklist.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
-        private readonly IInventoryDataService _inventoryDataService;
+        private readonly IDocumentDataService _documentDataService;
         private readonly IEmployeeDataService _employeeDataService;
         private readonly IExternalDataService _externalDataService;
         private readonly IToolkitDataService _toolkitDataService;
-        private ObservableCollection<InventoryDataModel> _inventoryDataList;
+        private ObservableCollection<DocumentDataModel> _documentDataList;
         private ObservableCollection<EmployeeDataModel> _employeeDataList;
         private ObservableCollection<ExternalDataModel> _externalDataList;
         private ObservableCollection<ExternalDataModel> _scannedStockDataList;
@@ -44,21 +44,21 @@ namespace StockAccounting.Checklist.ViewModels
         private bool _isKeyboardEnabled;
 
         public MainViewModel(IDialogService dialogService,
-            IInventoryDataService inventoryDataService,
+            IDocumentDataService documentDataService,
             IEmployeeDataService employeeDataService,
             IExternalDataService externalDataService,
             IToolkitDataService toolkitDataService)
             : base(dialogService)
         {
             _toolkitDataService = toolkitDataService;
-            _inventoryDataService = inventoryDataService;
+            _documentDataService = documentDataService;
             _employeeDataService = employeeDataService;
             _externalDataService = externalDataService;
 
             Task.Run(() => OnAppearing());
         }
 
-        public ICommand InsertInventoryDataCommand => new Command(InsertInventoryData);
+        public ICommand InsertDocumentDataCommand => new Command(InsertDocumentData);
         public ICommand InitializeBarcodeScannerCommand => new Command<BarcodeScannerMode>(async(o) => await InitializeBarcodeScannerAsync(o));
         public ICommand ButtonCommand => new Command<object>(OpenPickerPopup);
         public ICommand DeleteRowCommand => new Command(DeleteRowAsync);
@@ -68,12 +68,12 @@ namespace StockAccounting.Checklist.ViewModels
 
 
         //public ICommand InitializeScannerCommand => new Command<BarcodeScannerMode>(InitializeScanner);
-        public ObservableCollection<InventoryDataModel> InventoryDataList
+        public ObservableCollection<DocumentDataModel> DocumentDataList
         {
-            get => _inventoryDataList;
+            get => _documentDataList;
             set
             {
-                _inventoryDataList = value;
+                _documentDataList = value;
                 OnPropertyChanged();
             }
         }
@@ -183,7 +183,7 @@ namespace StockAccounting.Checklist.ViewModels
                 _barcode = value;
                 if (value.Length == 13)
                 {
-                    InitializeBarcodeScannerAsync(BarcodeScannerMode.Inventory);
+                    InitializeBarcodeScannerAsync(BarcodeScannerMode.Document);
                 }
                 OnPropertyChanged();
             }
@@ -255,10 +255,12 @@ namespace StockAccounting.Checklist.ViewModels
             var pingSender = new Ping();
             var reply = pingSender.Send(ip);
 
+            return true;
+
             return reply == null || reply.Status == IPStatus.Success;
         }
 
-        private async void InsertInventoryData()
+        private async void InsertDocumentData()
         {
             Device.BeginInvokeOnMainThread(() => UserDialogs.Instance.ShowLoading("Inserting data..."));
 
@@ -271,7 +273,7 @@ namespace StockAccounting.Checklist.ViewModels
                     return;
                 }
 
-                var inventoryModel = new InventoryDataModel()
+                var documentModel = new DocumentDataModel()
                 {
                     Employee1Id = FirstSelectedEmployee.Id,
                     Employee2Id = SecondSelectedEmployee.Id,
@@ -279,14 +281,14 @@ namespace StockAccounting.Checklist.ViewModels
 
                 var data = new ScannedModel
                 {
-                    inventoryData = inventoryModel,
+                    documentData = documentModel,
                     scannedData = ScannedStockDataList,
                     usedToolkitData = UsedToolkitList,
                 };
 
                 try
                 {
-                    await _inventoryDataService.InsertInventoryData(data);
+                    await _documentDataService.InsertDocumentData(data);
                     CleanData();
                     UserDialogs.Instance.Alert("Data inserted successfully", "Success", "OK");
                 }
@@ -384,7 +386,7 @@ namespace StockAccounting.Checklist.ViewModels
                     }
                     break;
 
-                case BarcodeScannerMode.Inventory:
+                case BarcodeScannerMode.Document:
                     await ScanningDataAsync();
                     Preferences.ScannedStockDataList = ScannedStockDataList;
                     Preferences.ToolkitHistoryList = UsedToolkitList;

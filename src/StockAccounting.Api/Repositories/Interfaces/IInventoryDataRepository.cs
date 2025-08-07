@@ -1,13 +1,21 @@
-﻿using StockAccounting.Core.Data.Models.Data;
-using StockAccounting.Core.Data.Models.DataTransferObjects;
-using System.Collections.ObjectModel;
+﻿using StockAccounting.Core.Data.Models.Data.InventoryData;
 
 namespace StockAccounting.Api.Repositories.Interfaces
 {
     public interface IInventoryDataRepository
     {
-        Task<List<InventoryDataModel>> GetInventoryData();
-        Task<int?> InsertInventoryDataAsync(ScannedModel data);
+        public Task<List<InventoryDataModel>> GetInventoryData();
 
+        public Task<List<InventoryDataModel>> GetLatestInventoryData(DateTime lastSyncDateTime);
+
+        public Task<List<InventoryDataModel>> GetCheckedInventoryData();
+
+        public Task<int?> InsertInventoryDataAsync(InventoryDataModel inventoryData);
+
+        public Task UpdateInventoryDataAsync(InventoryDataModel inventoryData);
+
+        public Task<List<InventoryDataModel>> GetInprocessInventoryData();
+
+        public Task<int?> GetInventoryDataIdByNameAsync(string name);
     }
 }

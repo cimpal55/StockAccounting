@@ -19,7 +19,7 @@ namespace StockAccounting.Core.Data.Repositories
 
         public async Task InsertOrUpdateAsync(T obj) =>
             await _conn
-                .InsertOrReplaceAsync(obj) 
+                .InsertOrReplaceAsync(obj)
                 .ConfigureAwait(false);
 
         public async Task UpdateAsync(T obj) =>

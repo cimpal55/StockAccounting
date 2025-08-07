@@ -1,6 +1,6 @@
 ﻿using LinqToDB.Mapping;
 
-namespace StockAccounting.Core.Data.Models.Data
+namespace StockAccounting.Core.Data.Models.Data.StockEmployees
 {
     public sealed record StockEmployeesModel : StockEmployeesBaseModel
     {

@@ -1,26 +1,13 @@
-﻿using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Models.Data.EmployeeData;
+using StockAccounting.Core.Data.Models.Data.ExternalData;
+using StockAccounting.Core.Data.Models.DataTransferObjects;
 using System.ComponentModel.DataAnnotations;
 
 namespace StockAccounting.Web.ViewModels
 {
     public class InventoryDataViewModel : BaseViewModel
     {
-        public IEnumerable<InventoryDataModel>? InventoryDataModel { get; set; }
-
-        public int Id { get; set; }
-
-        [Range(1, int.MaxValue, ErrorMessage = "This field is required!")]
-        public int Employee1Id { get; set; }
-
-        [Range(1, int.MaxValue, ErrorMessage = "This field is required!")]
-        public int Employee2Id { get; set; }
-
-        [Required(ErrorMessage = "This field is required!")]
-        public DateTime Created { get; set; }
-
-        public IEnumerable<EmployeeDataModel>? Employees { get; set; }
-
-        public IEnumerable<ExternalDataModel>? ExternalData { get; set; }
+        public IEnumerable<InventoryListModel>? InventoryDataModel { get; set; }
 
         public int TotalPages { get; set; }
 

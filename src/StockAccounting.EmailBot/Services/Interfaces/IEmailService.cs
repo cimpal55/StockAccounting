@@ -1,4 +1,4 @@
-﻿using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Models.Data.EmployeeData;
 using System;
 using System.Collections.Generic;
 using System.Linq;

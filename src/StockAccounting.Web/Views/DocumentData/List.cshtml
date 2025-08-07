@@ -1,0 +1,48 @@
+﻿@model DocumentDataViewModel
+@{
+    ViewData["Title"] = "DocumentData";
+}
+
+<div class="container">
+    <div class="row pb-3">
+        <div class="col"></div>
+        <div class="col nav justify-content-end">
+            <div class="input-group">
+                <input type="text" name="searchDocumentData" id="searchDocumentDataId" value="@Model.SearchText" class="form-control" placeholder="Search...">
+                <button type="button" class="btn bg-transparent" style="margin-left: -40px; z-index: 100;" id="btnDocumentDataClearSearch">
+                    <i class="fa fa-times"></i>
+                </button>
+                <button type="button" id="btnSearchDocumentData" class="btn btn-primary">Search</button>
+                <button type="button" id="newDocumentDataButton" class="btn btn-success btn-margin-left" data-toggle="modal" data-target="#newDocumentDataModal">Add Document Doc</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container body-content">
+        <div class="alert-container-fixed">
+            <alerts></alerts>
+        </div>
+    </div>
+
+    <div class="fixed-table-container" id="divTable">
+        <table class="table" id="DocumentTable">
+            <thead>
+            <tr>
+                <th>Returned</th>
+                <th>Took</th>
+                <th>Created</th>
+                <th></th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<partial name="AddDocumentData" />
+<partial name="UpdateDocumentData" />
+<partial name="DeleteDocumentData" />
+<partial name="..\Shared/Warning" />
+
+@section Scripts {
+    <script src="~/js/DocumentData.js" asp-append-version="true"></script>
+}

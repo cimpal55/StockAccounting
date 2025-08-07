@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:ViewBase
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:svm="clr-namespace:StockAccounting.Inventory.ViewModels"
+    xmlns:views="clr-namespace:StockAccounting.Inventory.Views"
+    xmlns:converters="clr-namespace:StockAccounting.Inventory.Utils.Converters"
+    xmlns:behaviors="clr-namespace:StockAccounting.Inventory.Utils.Behaviors"
+    xmlns:triggers="clr-namespace:StockAccounting.Inventory.Utils.Triggers"
+    xmlns:models="clr-namespace:StockAccounting.Inventory.Models"
+    xmlns:controls="clr-namespace:StockAccounting.Inventory.Controls"
+    xmlns:utility="clr-namespace:StockAccounting.Inventory.Utility"
+    x:Class="StockAccounting.Inventory.Views.ScannedInventoryDataAddView">
+
+    <ContentPage.Resources>
+        <converters:StringToDecimalValueConverter x:Key="StringToDecimalValueConverter" />
+    </ContentPage.Resources>
+
+    <StackLayout Orientation="Vertical" Padding="0, 15, 0, 0">
+
+        <StackLayout Orientation="Horizontal" CompressedLayout.IsHeadless="true">
+            <Entry Text="{Binding Barcode, Mode=TwoWay}"  
+                   x:Name="barcodeEntry"
+                   Keyboard="Numeric"
+                   Placeholder="Skenēšana"
+                   Grid.Row="0"
+                   Focused="OnEntryFocused"
+                   TextChanged="OnBarcodeTextChanged"
+                   IsTextPredictionEnabled="false" 
+                   WidthRequest="300"
+                   MaxLength="13"
+                   Margin="0,0,0,10">
+                <Entry.Behaviors>
+                    <utility:EntryFocusBehavior NextFocusElementName="barcodeEntry"/>
+                    <behaviors:BarcodeEntryCompleteBehavior BarcodeLength="13" />
+                </Entry.Behaviors>
+            </Entry>
+
+            <StackLayout Orientation="Vertical" CompressedLayout.IsHeadless="true">
+                <Button ImageSource="keyboard.png"
+                        Clicked="OnToggleKeyboardClicked"
+                        Grid.Row="0"
+                        WidthRequest="50"
+                        BackgroundColor="Transparent"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center">
+                </Button>
+            </StackLayout>
+        </StackLayout>
+
+        <ListView Grid.Row="4" 
+                  ItemsSource="{Binding ScannedStockDataList}"
+                  HasUnevenRows="True"
+                  x:Name="scannedList"
+                  SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <ViewCell.ContextActions>
+                            <MenuItem Command="{Binding Path=BindingContext.DeleteRow, Source={x:Reference scannedList}}"
+                                      CommandParameter="{Binding .}"
+                                      Text="Delete row" 
+                                      IsDestructive="True"/>
+                        </ViewCell.ContextActions>
+                        <StackLayout Orientation="Horizontal" BackgroundColor="Transparent" CompressedLayout.IsHeadless="true">
+                            <Label Text="{Binding FullName}"
+                                   WidthRequest="200"/>
+                            <controls:CustomStepper HorizontalOptions="Center"
+                                                    Text="{Binding CheckedQuantity}"
+                                                    VerticalOptions="Center"
+                                                    MinimumValue="0.001"
+                                                    BindingContext="{Binding .}">
+                            </controls:CustomStepper>
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Button
+            Text="Save"
+            Command="{Binding SaveDetails}"/>
+    </StackLayout>
+</views:ViewBase>

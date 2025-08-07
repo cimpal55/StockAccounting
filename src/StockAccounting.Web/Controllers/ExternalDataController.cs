@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using StockAccounting.Web.Constants;
-using StockAccounting.Core.Data.Models.Data;
 using StockAccounting.Web.Services.Interfaces;
-using StockAccounting.Web.Utils;
-using StockAccounting.Web.ViewModels;
-using StockAccounting.Core.Data.Repositories.Interfaces;
 using StockAccounting.Web.Extensions;
+using StockAccounting.Core.Data.Models.Data.ExternalData;
+using StockAccounting.Core.Data.Models.Data.Unit;
 using StockAccounting.Core.Data.Models.DataTransferObjects;
+using StockAccounting.Core.Data.Repositories.Interfaces;
 
 namespace StockAccounting.Web.Controllers
 {
@@ -36,46 +35,46 @@ namespace StockAccounting.Web.Controllers
             _gRepository = gRepository;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> GetExternalData([FromBody] DtParameters dtParameters)
-        {
+        //[HttpPost]
+        //public async Task<IActionResult> GetExternalData([FromBody] DtParameters dtParameters)
+        //{
 
-            var searchBy = dtParameters.Search?.Value;
+        //    var searchBy = dtParameters.Search?.Value;
 
-            // if we have an empty search then just order the results by Id ascending
-            var orderCriteria = "Id";
-            var orderAscendingDirection = true;
+        //    // if we have an empty search then just order the results by Id ascending
+        //    var orderCriteria = "Id";
+        //    var orderAscendingDirection = true;
 
-            if (dtParameters.Order != null)
-            {
-                orderCriteria = dtParameters.Columns[dtParameters.Order[0].Column].Data;
-                orderAscendingDirection = dtParameters.Order[0].Dir.ToString().ToLower() == "asc";
-            }
+        //    if (dtParameters.Order != null)
+        //    {
+        //        orderCriteria = dtParameters.Columns[dtParameters.Order[0].Column].Data;
+        //        orderAscendingDirection = dtParameters.Order[0].Dir.ToString().ToLower() == "asc";
+        //    }
 
-            var result = await _repository.GetExternalDataAsync();
-            var totalResultsCount = result.Count();
+        //    var result = await _repository.GetExternalDataAsync();
+        //    var totalResultsCount = result.Count();
 
-            if (!string.IsNullOrEmpty(searchBy))
-            {
-                result = await _repository.GetExternalDataSearchTextAsync(searchBy);
-            }
+        //    if (!string.IsNullOrEmpty(searchBy))
+        //    {
+        //        result = await _repository.GetExternalDataSearchTextAsync(searchBy);
+        //    }
 
-            result = orderAscendingDirection ? result.AsQueryable().OrderByDynamic(orderCriteria, DtOrderDir.Asc) : result.AsQueryable().OrderByDynamic(orderCriteria, DtOrderDir.Desc);
+        //    result = orderAscendingDirection ? result.AsQueryable().OrderByDynamic(orderCriteria, DtOrderDir.Asc) : result.AsQueryable().OrderByDynamic(orderCriteria, DtOrderDir.Desc);
 
-            // now just get the count of items (without the skip and take) - eg how many could be returned with filtering
-            var filteredResultsCount = result.Count();
+        //    // now just get the count of items (without the skip and take) - eg how many could be returned with filtering
+        //    var filteredResultsCount = result.Count();
 
-            return Json(new DtResult<ExternalDataModel>
-            {
-                Draw = dtParameters.Draw,
-                RecordsTotal = totalResultsCount,
-                RecordsFiltered = filteredResultsCount,
-                Data = result
-                    .Skip(dtParameters.Start)
-                    .Take(dtParameters.Length)
-                    .ToList()
-            });
-        }
+        //    return Json(new DtResult<ExternalDataModel>
+        //    {
+        //        Draw = dtParameters.Draw,
+        //        RecordsTotal = totalResultsCount,
+        //        RecordsFiltered = filteredResultsCount,
+        //        Data = result
+        //            .Skip(dtParameters.Start)
+        //            .Take(dtParameters.Length)
+        //            .ToList()
+        //    });
+        //}
 
         public async Task<IActionResult> List(int pageId, string searchText)
         {
@@ -158,7 +157,7 @@ namespace StockAccounting.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                this.AddAlertDanger("Error: inventory document is not updated!");
+                this.AddAlertDanger("Error: Document is not updated!");
                 return BadRequest();
             }
 

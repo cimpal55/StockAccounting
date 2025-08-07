@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace StockAccounting.Web.Controllers
+namespace StockAccounting.Web.Controllers.Base
 {
     public class BaseController : Controller
     {

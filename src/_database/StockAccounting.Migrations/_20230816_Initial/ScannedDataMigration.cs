@@ -15,7 +15,7 @@ namespace StockAccounting.Migrations._20230816_Initial
                 .WithColumn(ScannedData.Id).AsInt32().NotNullable().PrimaryKey().Identity()
                 .WithColumn(ScannedData.DocumentSerialNumber).AsString(20).NotNullable()
                 .WithColumn(ScannedData.DocumentNumber).AsInt32().NotNullable()
-                .WithColumn(ScannedData.InventoryDataId).AsInt32().NotNullable().ForeignKey(Tables.InventoryData, InventoryData.Id)
+                .WithColumn(ScannedData.DocumentDataId).AsInt32().NotNullable().ForeignKey(Tables.DocumentData, DocumentData.Id)
                 .WithColumn(ScannedData.ExternalDataId).AsInt32().NotNullable().ForeignKey(Tables.ExternalData, ExternalData.Id)
                 .WithColumn(ScannedData.Quantity).AsDecimal(7, 2).NotNullable()
                 .WithColumn(ScannedData.Created).AsDateTime().NotNullable();

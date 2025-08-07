@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:ViewBase
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:svm="clr-namespace:StockAccounting.Inventory.ViewModels"
+    xmlns:views="clr-namespace:StockAccounting.Inventory.Views"
+    xmlns:converters="clr-namespace:StockAccounting.Inventory.Utils.Converters"
+    xmlns:models="clr-namespace:StockAccounting.Inventory.Models"
+    xmlns:behaviors="clr-namespace:StockAccounting.Inventory.Utils.Behaviors"
+    x:Class="StockAccounting.Inventory.Views.InventoryDataView"
+    x:DataType="svm:InventoryDataViewModel">
+
+    <Shell.TitleView>
+        <Grid>
+            <Label
+                FontSize="15"
+                VerticalOptions="Center"
+                TextColor="Black"
+                FontAttributes="Bold"
+                Text="{Binding ViewTitle}"/>
+        </Grid>
+    </Shell.TitleView>
+
+    <ContentPage.Resources>
+        <converters:StatusToColorValueConverter x:Key="StatusToColorValueConverter" />
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+        <StackLayout>
+            <SearchBar
+                x:Name="documentSearchBar"
+                Placeholder="Search by Document name"
+                VerticalOptions="Center"
+                FontSize="17"
+                TextColor="Black"
+                WidthRequest="320"
+                Text="{Binding SearchedText}"
+                SearchCommand="{Binding SearchBarCommand}">
+                <SearchBar.Behaviors>
+                    <behaviors:SearchBarTextChangedBehavior />
+                </SearchBar.Behaviors>
+            </SearchBar>
+
+            <CollectionView 
+                Margin="0,10,0,0"
+                ItemsSource="{Binding Items}" 
+                SelectedItem="{Binding SelectedDocument}" 
+                SelectionChangedCommand="{Binding ShowDetailsCommand}"
+                ItemsLayout="VerticalList" 
+                SelectionMode="Single">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:InventoryListItem">
+                        <Grid Padding="5" BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorValueConverter}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1.3*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Name -->
+                            <Label                                
+                                Grid.ColumnSpan="2"
+                                Grid.Row="0"
+                                Margin="5,5,5,0"
+                                FontSize="13"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Center"
+                                TextColor="Black"
+                                Text="{Binding Name, StringFormat='{0}'}"/>
+
+                            <!-- Employee1 -->
+                            <Label 
+                                Grid.Column="0"
+                                Grid.Row="1"
+                                Margin="5,0,5,0"
+                                FontSize="13"
+								HorizontalOptions="Start"
+								VerticalOptions="Center"
+								TextColor="Black"
+								Text="{Binding Employee1, StringFormat='Employee1: {0}'}"/>
+
+                            <!-- Employee2 -->
+                            <Label 
+                                Grid.Column="1"
+                                Grid.Row="1"
+                                Margin="5,0,5,0"
+                                FontSize="13"
+								HorizontalOptions="Start"
+								VerticalOptions="Center"
+								TextColor="Black"
+								Text="{Binding Employee2, StringFormat='Employee2: {0}'}"/>
+
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
+    </ContentPage.Content>
+</views:ViewBase>

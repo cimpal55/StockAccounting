@@ -1,6 +1,6 @@
 ﻿namespace StockAccounting.Checklist.Models.Data
 {
-    public class InventoryDataBaseModel
+    public class DocumentDataBaseModel
     {
         public int Id { get; set; }
 

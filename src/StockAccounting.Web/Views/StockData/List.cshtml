@@ -1,10 +1,11 @@
 ﻿@using System.Globalization
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using StockAccounting.Core.Data.Enums
+@using StockAccounting.Web.Extensions
 @model StockDataViewModel
 @{
     ViewData["Title"] = "StockData";
 }
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.css" />
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css" />
 
 <div class="container">
     <alerts></alerts>
@@ -29,11 +30,11 @@
         <div class="col"></div>
         <div class="col">
             <div class="input-group">
-                <input type="text" name="searchStockData" id="searchStockDataId" class="form-control" placeholder="Search...">
+                <input type="text" name="searchStockData" id="searchStockDataId" value="@Model.SearchText" class="form-control" placeholder="Search...">
                 <button type="button" class="btn bg-transparent" style="margin-left: -40px; z-index: 100;" id="btnStockDataClearSearch">
                     <i class="fa fa-times"></i>
                 </button>
-                <a class="btn btn-primary search-link" style="color: #fff;">Search</a>
+                <a id="btnSearchStockData" class="btn btn-primary search-link" asp-controller="stockData" asp-action="List" asp-route-id="1" asp-route-searchText="dummyText">Search</a>
             </div>
         </div>
     </div>
@@ -61,7 +62,9 @@
             @foreach (var item in Model.StockDataModel)
             {
                 <tr id="data_@item.Id">
-                    <td><input type="checkbox" value="@item.Id" class="custom-checkbox chkCheckBoxId" id="checkBox"/></td>
+                    <td>
+                        <input type="checkbox" value="@item.Id" class="custom-checkbox chkCheckBoxId" id="checkBox"/>
+                    </td>
                     <td>@item.Name</td>
                     <td>@item.ItemNumber</td>
                     <td>@item.Barcode</td>
@@ -86,7 +89,7 @@
             </tbody>
         </table>
     </div>
-@*     <div class="row justify-content-end pr-3">
+    <div class="row justify-content-end pr-3">
         <nav aria-label="Page navigation">
             <ul class="pagination">
                 @if (Model.EndPage > 9)
@@ -107,7 +110,7 @@
                 }
             </ul>
         </nav>
-    </div> *@
+    </div>
 </div>
 
 @section Scripts{

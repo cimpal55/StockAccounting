@@ -3,14 +3,15 @@ using LinqToDB.AspNet;
 using FirebirdSql.Data.FirebirdClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StockAccounting.Core.Data.DbAccess;
-using StockAccounting.Core.Data.Models.Data;
-using StockAccounting.Core.Data.Models.DataTransferObjects;
-using StockAccounting.Core.Data.Utils.ServiceRegistration;
-using StockAccounting.Core.Data.Repositories.Interfaces;
 using System.Globalization;
 using Serilog;
-using Dayton.NetsuiteOAuth1RestApi.Services;
+using Microsoft.Win32.TaskScheduler;
+using StockAccounting.Core.Data.DbAccess;
+using StockAccounting.Core.Data.Models.Data.ExternalData;
+using StockAccounting.Core.Data.Models.Data.EmployeeData;
+using StockAccounting.Core.Data.Models.DataTransferObjects;
+using StockAccounting.Core.Data.Repositories.Interfaces;
+using StockAccounting.Core.Data.Utils.ServiceRegistration;
 
 IConfiguration _configuration = new ConfigurationBuilder()
   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -27,7 +28,7 @@ var logFilePath = $"Logs/log-.txt";
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
-    .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Hour)
+    .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 999)
     .CreateLogger();
 
 var serviceProvider = CreateServices();
@@ -58,7 +59,7 @@ IServiceProvider CreateServices()
 async System.Threading.Tasks.Task SynchronizationAsync(IServiceProvider serviceProvider)
 {
     var startDate = DateTime.Now;
-    Log.Information("Synchronization start: {date}", startDate);
+    Log.Information("------------------------- Synchronization start: {date}", startDate);
 
     IEnumerable<SynchronizationModel> fromScanned;
     IEnumerable<EmployeeDataModel> fromEmployees;
@@ -77,20 +78,13 @@ async System.Threading.Tasks.Task SynchronizationAsync(IServiceProvider serviceP
         fromEmployees = GetEmployeesFromFirebird(connection);
         if (!(dbEmployees.Count() == fromEmployees.Count()))
         {
-            await CompareEmployeesAsync(fromEmployees, dbEmployees);
+            await CompareEmployeesAsync(fromEmployees, dbEmployees, connection);
             Log.Debug("Employee synchronization finished");
         }
         else
             Log.Debug("Employees are up to date.");
         Log.Debug("");
 
-
-        // Getting and comparing external data
-        Log.Information("---- External data synchronization started ----");
-        IEnumerable<ExternalDataModel> dbExternalData = await _externalDataRepository.GetExternalDataAsync().ConfigureAwait(false);
-        await ExternalDataSynchronizationAsync(dbExternalData.ToList());
-        Log.Debug("External data synchronization finished");
-        Log.Debug("");
 
         // Getting and comparing used data
         Log.Information("---- Used stocks synchronization started ----");
@@ -111,6 +105,8 @@ async System.Threading.Tasks.Task SynchronizationAsync(IServiceProvider serviceP
         var spentTime = endDate - startDate;
         Log.Information("Synchronization finished: {endDate}", endDate);
         Log.Information("Synchronization spent time: {spentTime}", spentTime);
+        Log.Information("");
+        Log.Information("");
     }
 }
 
@@ -141,25 +137,38 @@ IEnumerable<EmployeeDataModel> GetEmployeesFromFirebird(FbConnection conn)
     return fromEmployees;
 }
 
-async System.Threading.Tasks.Task CompareEmployeesAsync(IEnumerable<EmployeeDataModel> fbEmployees, IEnumerable<EmployeeDataModel> dbEmployees)
+async System.Threading.Tasks.Task CompareEmployeesAsync(IEnumerable<EmployeeDataModel> fbEmployees, IEnumerable<EmployeeDataModel> dbEmployees, FbConnection conn)
 {
+    string? email = null;
     List<EmployeeDataModel> toEmployees = new();
-    var unmatchedEmployee = fbEmployees.Select(x => new { x.Name, x.Surname, x.Code, x.Email, x.IsManager })
-                                       .Except(dbEmployees.Select(y => new { y.Name, y.Surname, y.Code, y.Email, y.IsManager })).ToList();
+    var unmatchedEmployee = fbEmployees.Select(x => new { x.Name, x.Surname, x.Code })
+                                       .Except(dbEmployees.Select(y => new { y.Name, y.Surname, y.Code })).ToList();
+    
     Log.Debug("Were found {unmatchedEmployee} employees", unmatchedEmployee.Count);
     foreach (var employee in unmatchedEmployee)
     {
+        var query = new FbCommand($"SELECT EMAIL FROM Workers WHERE WORKER_CODE = '{employee.Code}'", conn);
+
+        using (var reader = query.ExecuteReader())
+        {
+            if (reader.Read())
+            {
+                email = reader.GetString(0);
+            }
+        }
+
         EmployeeDataModel item = new()
         {
             Name = employee.Name,
             Surname = employee.Surname,
             Code = employee.Code,
-            Email = employee.Email,
-            IsManager = employee.IsManager,
+            Email = email,
+            IsManager = false,
             Created = DateTime.Now
         };
         
         toEmployees.Add(item);
+        Log.Debug("Jauns darbinieks: {0}", employee);
     }
 
     foreach (var item in toEmployees)
@@ -170,16 +179,32 @@ async System.Threading.Tasks.Task CompareEmployeesAsync(IEnumerable<EmployeeData
 
 async Task<IEnumerable<SynchronizationModel>> GetUsedScannedDataFromFirebirdAsync(FbConnection conn)
 {
-    List<SynchronizationModel> fromScanned = new();
-    List<string> employees = await _stockDataRepository.ReturnStockEmployeesCodes();
-    string employeesString = string.Empty;
-    foreach (var item in employees)
-    {
-        var tempString = $"'{item}'";
+    string[] arguments = Environment.GetCommandLineArgs();
+   
+    string entered = DateTime.Now.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+ 
+    int length = 1;
 
-        employeesString += tempString;
+    if (arguments.Length > length)
+    {
+        try
+        {
+            DateTime.TryParse(arguments[length], out var date);
+            entered = date.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+            #if (RELEASE)
+                logFilePath = $"C:\\www\\StockAccounting\\Synchronization\\Logs\\log-{entered}-ConsoleArgument.txt";
+            #endif
+        }
+        catch
+        {
+            Log.Information("Wrong date format!!!");
+            Console.WriteLine("Wrong date format!!!");
+        }
     }
-    employeesString = employeesString.Replace("''", "','");
+
+    Log.Information("Synchronization after date: {0}", entered);
+
+    List<SynchronizationModel> fromScanned = new();
 
     var usedList = new FbCommand($@"SELECT wr.WORKER_CODE as WORKER,
                                         sdc.DOC_SER_NR, sdc.DOC_NR, gd.BARCODE, sd.AMOUNT, sd.ENTERED  
@@ -188,8 +213,10 @@ async Task<IEnumerable<SynchronizationModel>> GetUsedScannedDataFromFirebirdAsyn
                                     JOIN SELL_DOC sdc ON sd.SELL_DOC_ID = sdc.SELL_DOC_ID
                                     JOIN SELL_DET_WORKERS sdw ON sdw.SELL_DET_ID = sd.SELL_DET_ID  
                                     JOIN WORKERS wr ON wr.WORKER_ID = sdw.WORKERS_ID
-                                    WHERE sd.ENTERED > '{DateTime.Now.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture)}'
-                                        AND wr.WORKER_CODE IN({employeesString})", conn);
+                                    WHERE CAST(sd.ENTERED AS DATE) = '{entered}'
+                                    AND gd.GOOD_TYPE_ID = 3", conn);
+
+
     var usedReader = usedList.ExecuteReader();
     while (usedReader.Read())
     {
@@ -209,57 +236,6 @@ async Task<IEnumerable<SynchronizationModel>> GetUsedScannedDataFromFirebirdAsyn
     }
 
     return fromScanned;
-}
-
-async System.Threading.Tasks.Task ExternalDataSynchronizationAsync(List<ExternalDataModel> dbData)
-{
-    var today = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day);
-    var url = $"?q=createdDate ON_OR_AFTER \"{today:dd.MM.yyyy}\"";
-    var nsApiService = new NsRestApiService(_configuration);
-    Log.Debug("Getting netsuite items by {date}", $"{today.ToShortDateString()}");
-    var netsuiteItems = await nsApiService.GetInventoryItems(url).ConfigureAwait(false);
-    Log.Debug("Netsuite items count: {netsuiteItems}", netsuiteItems.Count());
-    List<ExternalDataModel> fbData = new List<ExternalDataModel>();
-
-    foreach (var item in netsuiteItems)
-    {
-        var external = new ExternalDataModel
-        {
-            Barcode = item.Barcode,
-            ItemNumber = item.ItemNumber,
-            Name = item.DisplayName,
-            PluCode = item.PluCode,
-            Unit = item.UnitName.Unit,
-            Created = DateTime.Now,
-            Updated = DateTime.Now,
-        };
-
-        fbData.Add(external);
-    }
-
-    int unmatched = 0;
-
-    foreach (var item in fbData)
-    {
-        if(await _externalDataRepository.CheckIfExists(item.Barcode) != true)
-        {
-            await _externalRepository
-                .InsertAsync(item)
-                .ConfigureAwait(false);
-
-            unmatched++;
-        }
-        else
-        {
-            await _externalDataRepository
-                .UpdateExternalDataAsyncByBarcode(item)
-                .ConfigureAwait(false);
-
-            unmatched++;
-        }
-    }
-
-    Log.Debug("Were found {0} unmatched external data", unmatched);
 }
 
 //static void ScheduleCreate()

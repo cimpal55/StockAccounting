@@ -8,7 +8,7 @@ namespace StockAccounting.Checklist.Models.Data
     {
         public int Id { get; set; }
         
-        public int InventoryDataId { get; set; }
+        public int DocumentDataId { get; set; }
 
         public int ExternalDataId { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿using LinqToDB;
 using StockAccounting.Core.Data.DbAccess;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Models.Data.Unit;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 
 namespace StockAccounting.Core.Data.Repositories

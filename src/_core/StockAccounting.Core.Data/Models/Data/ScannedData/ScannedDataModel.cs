@@ -1,6 +1,6 @@
 ﻿using LinqToDB.Mapping;
 
-namespace StockAccounting.Core.Data.Models.Data
+namespace StockAccounting.Core.Data.Models.Data.ScannedData
 {
     public sealed record ScannedDataModel : ScannedDataBaseModel
     {

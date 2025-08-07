@@ -21,7 +21,7 @@ namespace StockAccounting.Checklist.Bootstrap
             builder.RegisterType<MainViewModel>();
 
             //services - data
-            builder.RegisterType<InventoryDataService>().As<IInventoryDataService>();
+            builder.RegisterType<DocumentDataService>().As<IDocumentDataService>();
             builder.RegisterType<ExternalDataService>().As<IExternalDataService>();
             builder.RegisterType<EmployeeDataService>().As<IEmployeeDataService>();
             builder.RegisterType<ToolkitDataService>().As<IToolkitDataService>();

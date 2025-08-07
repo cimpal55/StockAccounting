@@ -1,5 +1,5 @@
 ﻿using FluentMigrator;
-using StockAccounting.Core.Data.Models;
+
 using StockAccounting.Core.Data.Resources;
 using StockAccounting.Migrations.Interfaces;
 using StockAccounting.Migrations.Utils.Extensions;

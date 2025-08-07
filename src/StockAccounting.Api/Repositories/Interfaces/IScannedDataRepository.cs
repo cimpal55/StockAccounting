@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Models.Data.ScannedData;
 
 namespace StockAccounting.Api.Repositories.Interfaces
 {

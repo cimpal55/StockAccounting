@@ -1,6 +1,7 @@
 ﻿using LinqToDB;
 using StockAccounting.Core.Data.DbAccess;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Models.Data.Toolkit;
+using StockAccounting.Core.Data.Models.Data.ToolkitExternal;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 
 namespace StockAccounting.Core.Data.Repositories
@@ -13,24 +14,24 @@ namespace StockAccounting.Core.Data.Repositories
             _conn = conn;
         }
 
-        //public async Task<IEnumerable<ToolkitModel>> GetToolkitDataAsync() {
-        //    var sql = @""
-        //}
-        public async Task<IEnumerable<ToolkitModel>> GetToolkitDataAsync() =>
-            await _conn
-                .Toolkits
-                .ToListAsync();
-        public async Task<IEnumerable<ToolkitModel>> GetToolkitDataBySearchTextAsync(string searchText) =>
-            await _conn
-                .Toolkits
-                .Where(x => x.ToString().Contains(searchText))
-                .ToListAsync();
+        public IQueryable<ToolkitModel> GetToolkitDataQueryable()
+        {
+            return _conn.Toolkits;
+        }
+
+        public IQueryable<ToolkitModel> GetToolkitDataBySearchTextQueryable(string searchText)
+        {
+            return _conn.Toolkits
+                .Where(x => x.Name.Contains(searchText) || x.Description.Contains(searchText));
+        }
+
 
         public async Task<IEnumerable<ToolkitExternalModel>> GetToolkitExternalDataAsync()
         {
             var query = from tk in _conn.ToolkitExternal
                         join ex in _conn.ExternalData on tk.ExternalDataId equals ex.Id
-                        select new ToolkitExternalModel { 
+                        select new ToolkitExternalModel
+                        {
                             ExternalDataId = tk.ExternalDataId,
                             ExternalDataName = ex.Name,
                             Quantity = tk.Quantity,

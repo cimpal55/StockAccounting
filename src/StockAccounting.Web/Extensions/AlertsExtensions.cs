@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using StockAccounting.Core.Data.Repositories.Alert;
+using StockAccounting.Web.Models.Data.Alert;
 
 namespace StockAccounting.Web.Extensions
 {

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Cors.Infrastructure;
 using StockAccounting.Api.Repositories;
 using StockAccounting.Api.Repositories.Interfaces;
-using StockAccounting.Core.Data.Services;
-using StockAccounting.Core.Data.Services.Interfaces;
 using StockAccounting.Core.Data.Utils.ServiceRegistration;
 
 namespace StockAccounting.Api.Utils.ServiceRegistration
@@ -18,8 +16,10 @@ namespace StockAccounting.Api.Utils.ServiceRegistration
             @this
                 .AddScoped<IExternalDataRepository, ExternalDataRepository>()
                 .AddScoped<IEmployeeDataRepository, EmployeeDataRepository>()
-                .AddScoped<IInventoryDataRepository, InventoryDataRepository>()
+                .AddScoped<IDocumentDataRepository, DocumentDataRepository>()
                 .AddScoped<IScannedDataRepository, ScannedDataRepository>()
-                .AddScoped<IToolkitDataRepository, ToolkitDataRepository>();
+                .AddScoped<IToolkitDataRepository, ToolkitDataRepository>()
+                .AddScoped<IInventoryDataRepository, InventoryDataRepository>()
+                .AddScoped<IScannedInventoryDataRepository, ScannedInventoryDataRepository>();
     }
 }

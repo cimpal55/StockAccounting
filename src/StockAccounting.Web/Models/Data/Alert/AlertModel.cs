@@ -1,4 +1,4 @@
-﻿namespace StockAccounting.Core.Data.Repositories.Alert
+﻿namespace StockAccounting.Web.Models.Data.Alert
 {
     public class Alert
     {

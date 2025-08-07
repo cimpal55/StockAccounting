@@ -1,4 +1,4 @@
-﻿using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Models.Data.ExternalData;
 
 namespace StockAccounting.Api.Repositories.Interfaces
 {

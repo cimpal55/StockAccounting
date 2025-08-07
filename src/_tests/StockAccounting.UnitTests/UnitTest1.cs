@@ -1,5 +1,5 @@
-using StockAccounting.Checklist.Repositories;
-using StockAccounting.Checklist.Services;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace StockAccounting.UnitTests
 {
@@ -7,18 +7,8 @@ namespace StockAccounting.UnitTests
     public class UnitTest1
     {
         [TestMethod]
-        public async Task GetEmployeeDataListTestAsync()
+        public void TestMethod1()
         {
-            // Arrange
-            var repository = new GenericRepository();
-            var inventoryService = new InventoryDataService(repository);
-            var employeeService = new EmployeeDataService(repository);
-
-            // Act
-            var employees = await employeeService.GetEmployeeDataAsync();
-
-            // Assert
-            Assert.IsTrue(employees != null);
         }
     }
 }

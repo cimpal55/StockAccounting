@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StockAccounting.Api.Repositories;
 using StockAccounting.Api.Repositories.Interfaces;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Models.Data.ExternalData;
 
 namespace StockAccounting.Api.Controllers
 {

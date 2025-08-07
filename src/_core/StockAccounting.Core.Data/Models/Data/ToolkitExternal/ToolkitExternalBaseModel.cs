@@ -1,28 +1,27 @@
 ﻿using LinqToDB.Mapping;
 using StockAccounting.Core.Data.Resources;
-using static StockAccounting.Core.Data.Resources.Columns;
 
-namespace StockAccounting.Core.Data.Models.Data
+namespace StockAccounting.Core.Data.Models.Data.ToolkitExternal
 {
     [Table(Tables.ToolkitExternal)]
     public record ToolkitExternalBaseModel
     {
-        [Column(ToolkitExternal.Id, IsPrimaryKey = true, IsIdentity = true)]
+        [Column(Columns.ToolkitExternal.Id, IsPrimaryKey = true, IsIdentity = true)]
         public int Id { get; set; }
 
-        [Column(ToolkitExternal.ExternalDataId, CanBeNull = false)]
+        [Column(Columns.ToolkitExternal.ExternalDataId, CanBeNull = false)]
         public int ExternalDataId { get; set; }
 
-        [Column(ToolkitExternal.ToolkitId, CanBeNull = false)]
+        [Column(Columns.ToolkitExternal.ToolkitId, CanBeNull = false)]
         public int ToolkitId { get; set; }
 
-        [Column(ToolkitExternal.Quantity, CanBeNull = false)]
+        [Column(Columns.ToolkitExternal.Quantity, CanBeNull = false)]
         public double Quantity { get; set; } = 1;
 
-        [Column(ToolkitExternal.Created, CanBeNull = false)]
+        [Column(Columns.ToolkitExternal.Created, CanBeNull = false)]
         public DateTime Created { get; set; }
 
-        [Column(ToolkitExternal.Updated, CanBeNull = false)]
+        [Column(Columns.ToolkitExternal.Updated, CanBeNull = false)]
         public DateTime Updated { get; set; }
 
     }

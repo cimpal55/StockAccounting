@@ -7,6 +7,8 @@
         public const string Employee = "TBL_CONF_Employees";
         public const string ExternalData = "TBL_ExternalData";
         public const string ScannedData = "TBL_ScannedData";
+        public const string ScannedInventoryData = "TBL_ScannedInventoryData";
+        public const string DocumentData = "TBL_DocumentData";
         public const string InventoryData = "TBL_InventoryData";
         public const string StockEmployees = "TBL_Stock_Employees";
         public const string StockData = "TBL_StockData";

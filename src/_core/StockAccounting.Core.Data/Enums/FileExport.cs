@@ -1,4 +1,4 @@
-﻿namespace StockAccounting.Core.Data
+﻿namespace StockAccounting.Core.Data.Enums
 {
     public enum FileExport
     {

@@ -1,11 +1,12 @@
 ﻿using LinqToDB;
 using LinqToDB.Data;
 using Serilog;
+using System.Security.Cryptography;
 using StockAccounting.Core.Data.DbAccess;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Data.Models.Data.ExternalData;
+using StockAccounting.Core.Data.Models.Data.ScannedData;
 using StockAccounting.Core.Data.Models.DataTransferObjects;
 using StockAccounting.Core.Data.Repositories.Interfaces;
-using System.Security.Cryptography;
 
 namespace StockAccounting.Core.Data.Repositories
 {
@@ -28,19 +29,33 @@ namespace StockAccounting.Core.Data.Repositories
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<ExternalDataModel>> GetExternalDataSearchTextAsync(string searchText)
+        public IQueryable<ExternalDataModel> GetExternalDataQueryable()
         {
-            var sql = "SELECT TOP 100 PERCENT ROW_NUMBER() OVER (ORDER BY ed.ID) AS RowId, " +
-                      "ed.ID, ed.PluCode, ed.ItemNumber, ed.Name, ed.Barcode, ed.Unit " +
-                      "FROM TBL_ExternalData as ed " +
-                      "WHERE ed.Barcode LIKE '%" + searchText + "%' " +
-                      "OR ed.PluCode LIKE '%" + searchText + "%' " +
-                      "OR ed.Name LIKE '%" + searchText + "%' " +
-                      "OR ed.ItemNumber LIKE '%" + searchText + "%'";
+            var sql =
+                @"SELECT TOP 100 PERCENT ROW_NUMBER() OVER(ORDER BY ed.ID) AS RowId,
+                           ed.*
+                           FROM TBL_ExternalData as ed";
 
-            return await _conn.QueryToListAsync<ExternalDataModel>(sql)
-                .ConfigureAwait(false);
+            var query = _conn.FromSql<ExternalDataModel>(sql);
+
+            return query;
         }
+
+        public IQueryable<ExternalDataModel> GetExternalDataSearchTextQueryable(string searchText)
+        {
+            var sql = @$"SELECT ROW_NUMBER() OVER (ORDER BY ed.ID) AS RowId,
+                       ed.*
+                FROM TBL_ExternalData as ed
+                WHERE ed.Barcode LIKE '%{searchText}%'
+                   OR ed.PluCode LIKE '%{searchText}%'
+                   OR ed.Name LIKE '%{searchText}%'
+                   OR ed.ItemNumber LIKE '%{searchText}%'";
+
+            var query = _conn.FromSql<ExternalDataModel>(sql);
+
+            return query;
+        }
+
 
         public ExternalDataModel GetExternalDataById(int externalDataId)
         {
@@ -63,7 +78,7 @@ namespace StockAccounting.Core.Data.Repositories
                 .Where(x => x.Barcode == model.Barcode)
                 .FirstOrDefaultAsync();
 
-            if(dbModel == null)
+            if (dbModel == null)
             {
                 Log.Debug("External data with barcode: {barcode} wasn't found.", model.Barcode);
                 var id = await _conn.InsertWithInt32IdentityAsync(model);
@@ -97,21 +112,21 @@ namespace StockAccounting.Core.Data.Repositories
 
         public async Task<IEnumerable<AutocompleteModel>> ExternalAutoComplete()
         {
-            var query = (from c in _conn.ExternalData
-                         select new AutocompleteModel
-                         {
-                             Id = c.Id,
-                             Text = string.Join(" ", c.Name, c.ItemNumber, c.PluCode),
-                         });
+            var query = from c in _conn.ExternalData
+                        select new AutocompleteModel
+                        {
+                            Id = c.Id,
+                            Text = string.Join(" ", c.Name, c.ItemNumber, c.PluCode),
+                        };
 
             return await query.ToListAsync();
         }
 
-        public async Task<bool> CheckIfExists(string barcode)
+        public bool CheckIfExists(string barcode)
         {
-            return await _conn
+            return _conn
                 .ExternalData
-                .AnyAsync(x => x.Barcode == barcode);
+                .Any(x => x.Barcode == barcode);
         }
 
         public async Task UpdateExternalDataAsync(ExternalDataModel item) =>

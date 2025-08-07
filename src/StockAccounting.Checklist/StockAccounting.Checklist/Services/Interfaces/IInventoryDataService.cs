@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace StockAccounting.Checklist.Services.Interfaces
 {
-    public interface IInventoryDataService
+    public interface IDocumentDataService
     {
-        Task<ObservableCollection<InventoryDataModel>> GetInventoryDataAsync();
-        Task<ScannedModel> InsertInventoryData(ScannedModel data);
+        Task<ObservableCollection<DocumentDataModel>> GetDocumentDataAsync();
+        Task<ScannedModel> InsertDocumentData(ScannedModel data);
     }
 }

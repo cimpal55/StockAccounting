@@ -1,4 +1,5 @@
-﻿@using StockAccounting.Web.Utils;
+﻿@Html.AntiForgeryToken();
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,6 +53,7 @@
                     <a class="admin-button nav-link dropdown-toggle pe-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="Administration">Administration</a>
                     <div class="dropdown-menu" aria-labelledby="Administration">
                         <a class="dropdown-item btn btn-outline-dark" asp-controller="ToolkitData" asp-action="List">Toolkits</a>
+                        <a class="dropdown-item btn btn-outline-dark" asp-controller="StockData" asp-action="RunManualSynchronization">Synchronization</a>
                     </div>
                 </li>
             </ul>
@@ -70,7 +72,7 @@
             </li><!-- End Dashboard Nav -->
 
             <li class="nav-item">
-                <a class="nav-link collapsed" asp-controller="InventoryData" asp-action="List">
+                <a class="nav-link collapsed" asp-controller="DocumentData" asp-action="List">
                     <i class="bi bi-building-fill"></i>
                     <span>Documents</span>
                 </a>
@@ -87,6 +89,13 @@
                 <a class="nav-link collapsed" asp-controller="StockData" asp-action="List">
                     <i class="bi bi-sliders2-vertical"></i>
                     <span>Stocks</span>
+                </a>
+            </li><!-- End Hone Page Section -->
+            
+            <li class="nav-item">
+                <a class="nav-link collapsed" asp-controller="InventoryData" asp-action="List">
+                    <i class="bi bi-car-front-fill"></i>
+                    <span>Inventory</span>
                 </a>
             </li><!-- End Hone Page Section -->
 
@@ -124,7 +133,7 @@
                             <a class="nav-link @Html.IsSelected(actions: "List", controllers: "ExternalData")" asp-controller="ExternalData" asp-action="List">Products</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @Html.IsSelected(actions: "List", controllers: "InventoryData")" asp-controller="InventoryData" asp-action="List">Documents</a>
+                            <a class="nav-link @Html.IsSelected(actions: "List", controllers: "DocumentData")" asp-controller="DocumentData" asp-action="List">Documents</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link @Html.IsSelected(actions: "List", controllers: "EmployeeData")" asp-controller="EmployeeData" asp-action="List">Employees</a>
@@ -162,32 +171,29 @@
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/bootstrap4/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/tableexport.jquery.plugin/tableExport.min.js"></script>
-    <script src="~/lib/bootstrap-table/dist/bootstrap-table.min.js"></script>
-    <script src="~/lib/bootstrap-table/dist/bootstrap-table-locale-all.min.js"></script>
-    <script src="~/lib/bootstrap-table/dist/extensions/export/bootstrap-table-export.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.5/lodash.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="~/lib/bootstrap/bootstrap4/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/1.13.6/sorting/datetime-moment.js"></script>
+    <script src="~/lib/tableexport.jquery.plugin/tableExport.min.js"></script>
+    <script src="~/lib/bootstrap-table/dist/bootstrap-table.min.js"></script>
+    <script src="~/lib/bootstrap-table/dist/bootstrap-table-locale-all.min.js"></script>
+    <script src="~/lib/bootstrap-table/dist/extensions/export/bootstrap-table-export.min.js"></script>
 
     <!-- Vendor JS Files -->
     <script src="~/Admin/assets/vendor/apexcharts/apexcharts.min.js"></script>
     <script src="~/Admin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/Admin/assets/vendor/chart.js/chart.umd.js"></script>
-    <script src="~/Admin/assets/vendor/echarts/echarts.min.js"></script>
-    <script src="~/Admin/assets/vendor/quill/quill.min.js"></script>
-    <script src="~/Admin/assets/vendor/simple-datatables/simple-datatables.js"></script>
-    <script src="~/Admin/assets/vendor/tinymce/tinymce.min.js"></script>
-    <script src="~/Admin/assets/vendor/php-email-form/validate.js"></script>
 
     <!-- Template Main JS File -->
     <script src="~/Admin/assets/js/main.js"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
-
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

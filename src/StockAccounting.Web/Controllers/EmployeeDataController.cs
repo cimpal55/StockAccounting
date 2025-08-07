@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StockAccounting.Core.Data.Repositories.Interfaces;
 using StockAccounting.Web.Extensions;
 using StockAccounting.Web.Services.Interfaces;
-using StockAccounting.Web.ViewModels;
 using StockAccounting.Web.Constants;
-using StockAccounting.Core.Data;
+using StockAccounting.Core.Data.Enums;
+using StockAccounting.Core.Data.Repositories.Interfaces;
 
 namespace StockAccounting.Web.Controllers
 {
@@ -48,9 +47,31 @@ namespace StockAccounting.Web.Controllers
 
             var items = await _paginationService.PaginatedEmployeeDetails(pageId, _itemsPerPage, id);
 
-            var data = new StockDataViewModel
+            var data = new EmployeeDetailsViewModel
             {
-                StockDataModel = items,
+                EmployeeDetailsModel = items,
+                TotalPages = items.TotalPages,
+                PageIndex = items.PageIndex,
+                TotalData = items.TotalData,
+                StartPage = pageId >= _pagesInRow ? pageId - 2 : 1,
+                EndPage = pageId >= _pagesInRow && pageId < items.TotalPages ? pageId + 1 : items.TotalPages > _pagesInRow && pageId < items.TotalPages ? _pagesInRow : items.TotalPages,
+            };
+
+            return View(data);
+        }
+
+        public async Task<IActionResult> LeftQuantity(int pageId, int employeeId, int externalDataId)
+        {
+            if (pageId == 0) pageId = 1;
+            if (pageId < 0)
+                return BadRequest();
+
+            var items = await _paginationService.PaginatedEmployeeDetailLeftQuantity(pageId, _itemsPerPage,
+                employeeId, externalDataId);
+
+            var data = new EmployeeLeftQuantityViewModel()
+            {
+                EmployeeDetailLeftQuantityModel = items,
                 TotalPages = items.TotalPages,
                 PageIndex = items.PageIndex,
                 TotalData = items.TotalData,
@@ -78,5 +99,20 @@ namespace StockAccounting.Web.Controllers
                 return BadRequest();
             }
         }
+
+        //[HttpGet("file")]
+        //public async Task<FileStreamResult> ExportFile([FromQuery(Name = "fmt")] string format, [FromQuery(Name = "doctype")] string docType, [FromQuery(Name = "employeeId")] int employeeId, CancellationToken ct = default)
+        //{
+        //    var req = new EmployeeExportFileRequest
+        //    {
+        //        Format = format,
+        //        DocType = docType
+        //    };
+
+        //    var res = await _fileExportService.Exp(req, employeeId, ct)
+        //        .ConfigureAwait(false);
+
+        //    return File(res.FileStream, res.ContentType, res.FileName);
+        //}
     }
 }

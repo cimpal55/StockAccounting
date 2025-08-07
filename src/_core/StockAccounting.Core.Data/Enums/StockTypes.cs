@@ -1,10 +1,12 @@
-﻿namespace StockAccounting.Core.Data
+﻿namespace StockAccounting.Core.Data.Enums
 {
     public enum StockTypes
     {
         Default,
-        Accepted,
+        Taken,
         Returned,
         Used,
+        Moved,
+        Inventory
     }
 }

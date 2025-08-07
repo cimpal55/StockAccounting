@@ -1,4 +1,4 @@
-﻿using StockAccounting.Core.Data;
+﻿using StockAccounting.Core.Data.Enums;
 
 namespace StockAccounting.Web.ViewModels
 {

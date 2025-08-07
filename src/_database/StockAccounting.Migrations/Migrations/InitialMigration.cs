@@ -1,5 +1,6 @@
 ﻿using FluentMigrator;
 using StockAccounting.Migrations._20230816_Initial;
+using StockAccounting.Migrations._20250210_InventoryMigration;
 using StockAccounting.Migrations.Interfaces;
 
 namespace StockAccounting.Migrations.Migrations
@@ -13,7 +14,7 @@ namespace StockAccounting.Migrations.Migrations
                 new EmployeesMigration(),
                 new UnitsMigration(),
                 new ExternalDataMigration(),
-                new InventoryDataMigration(),
+                new DocumentDataMigration(),
                 new ScannedDataMigration(),
                 new StockTypesMigration(),
                 new StockDataMigration(),

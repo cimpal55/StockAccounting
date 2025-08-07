@@ -1,28 +1,23 @@
 $.fn.dataTable.ext.classes.sPageButton = 'page-link-datatable search-link button-datatable';
 $.fn.dataTable.ext.classes.sPageButtonActive = 'active-button-datatable';
+
 $(document).ready(function () {
 
     var table = $("#stockTable").DataTable({
         initComplete: function () {
             $('#divTable').show();
         },
-        dom: 'lrtip',
-        pagingType: "numbers",
-        "drawCallback": function (settings) {
-            $(".paging_numbers a").attr("href", "#")
-        },
         autoWidth: false,
-        paging: true,
-        searching: true,
+        searching: false,
         info: false,
-        order: [[2, 'asc']],
+        paging: false,
         columnDefs: [
             { width: 30, targets: 0, className: 'select-checkbox' },
             { width: 280, targets: 1 },
             { width: 130, targets: 2 },
             { width: 130, targets: 3 },
             { width: 110, targets: 4 },
-            { width: 110, targets: 5 },
+            { width: 110, targets: 5, type: 'html-num' },
             { width: 110, targets: 6 },
             { orderable: false, targets: [0, 7] },
             {
@@ -33,6 +28,7 @@ $(document).ready(function () {
                 }
             },
         ],
+        order: [[2, 'asc']],
     });
 
 
@@ -44,30 +40,6 @@ $(document).ready(function () {
             item.style.color = 'red';
         }
     }
-
-    $("#stockTable").on('draw.dt', function () {
-        $('.page-link-datatable').each(function () {
-            $(this).attr("aria-pressed", true);
-        })
-    });
-
-    $('#searchStockDataId').keyup(function () {
-        table.search($(this).val()).draw();
-    })
-
-    $.extend(true, $.fn.dataTable.defaults, {
-        language: {
-            search: ""
-        }
-    });
-
-    $('input.column_filter').on('keyup click', function () {
-        filterColumn(0);
-    });
-    $('[type=search]').each(function () {
-        $(this).attr("placeholder", "Search...");
-        $(this).before('<span class="fa fa-search"></span>');
-    });
 
     $('#checkBoxAll').click(function () {
         if ($(this).is(":checked")) {
@@ -85,9 +57,34 @@ $(document).ready(function () {
 });
 
 $(function () {
+    $("a.search-link").click(function (e) {
+        e.preventDefault();
+
+        var url = $(this).attr("href");
+        var searchText = $("#searchStockDataId").val();
+        url = url.replace("dummyText", searchText);
+
+        window.location.href = url;
+
+    });
+
+    $(document).on("keypress", function (e) {
+        if (e.which === 13) {
+            switch (document.activeElement.id) {
+                case "searchStockDataId":
+                    $("#btnSearchStockData").click();
+                    break;
+                default:
+                    alert("No active element found!");
+            }
+        }
+    });
+});
+
+$(function () {
     $("#btnStockDataClearSearch").click(function () {
         $("#searchStockDataId").val("");
-        $('#stockTable').DataTable().search("").draw();
+        $("#btnSearchStockData").click();
     });
 
     $(document).on('click', '.paginate_button', function () {

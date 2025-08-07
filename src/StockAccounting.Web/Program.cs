@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using NToastNotify;
 using Serilog;
-using StockAccounting.Core.Data.DbAccess;
 using StockAccounting.Web.Utils.ServiceRegistration;
 using System.Web.Mvc;
 using Newtonsoft.Json.Converters;
+using StockAccounting.Core.Data.DbAccess;
 
 var builder = WebApplication.CreateBuilder(args);
 

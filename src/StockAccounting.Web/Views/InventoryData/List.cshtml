@@ -23,51 +23,43 @@
         </div>
     </div>
     <div class="fixed-table-container" id="divTable" style="display: none;">
-        <table class="table" id="inventoryTable">
+        <table class="table" id="InventoryTable">
             <thead>
-            <tr>
-                <th>Returned</th>
-                <th>Took</th>
-                <th>Created</th>
-                <th></th>
-            </tr>
+                <tr>
+                    <th>First checker</th>
+                    <th>Second checker</th>
+                    <th>Employee</th>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Finished</th>
+                </tr>
             </thead>
             <tbody>
-            @{
-                System.Diagnostics.Debug.Assert(Model != null, nameof(Model) + " != null");
-                System.Diagnostics.Debug.Assert(Model.InventoryDataModel != null, "Model.InventoryDataModel != null");
-                TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
-            }
+                @{
+                    System.Diagnostics.Debug.Assert(Model != null, nameof(Model) + " != null");
+                    System.Diagnostics.Debug.Assert(Model.InventoryDataModel != null, "Model.InventoryDataModel != null");
+                    TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+                }
 
-            @foreach (var item in Model.InventoryDataModel)
-            {
-                <tr id="data_@item.Id">
-                    <td>@item.Employee1</td>
-                    <td>@item.Employee2</td>
-                    <td data-order="@item.Created.ToString("MMddyyyyHHmmss")">@item.Created.ToString("dd.MM.yyyy HH:mm")</td>
-                    <td align="right">
-                        <a class="btn btn-outline-primary" 
-                           role="button" 
-                           aria-pressed="true" 
-                           asp-controller="ScannedData" 
-                           asp-action="Details" 
-                           asp-route-id="@item.Id">Details</a>
-                        <button type="button"
-                                class="btn btn-warning"
-                                data-toggle="modal"
-                                data-target="#editInventoryDataModal"
-                                data-id="@item.Id"
-                                data-employee1id="@item.Employee1Id"
-                                data-employee2id="@item.Employee2Id"
-                                data-created="@item.Created.ToString("yyyy-MM-ddThh:mm")">Edit</button>
-                        <button type="button"
-                                class="btn btn-danger"
-                                data-toggle="modal"
-                                data-target="#deleteInventoryDataModal"
-                                data-id="@item.Id">Delete</button>
-                    </td>
-                </tr>
-            }
+                @foreach (var item in Model.InventoryDataModel)
+                {
+                    <tr id="data_@item.Id">
+                        <td>@item.Employee1Checker</td>
+                        <td>@item.Employee2Checker</td>
+                        <td>@item.ScannedEmployee</td>
+                        <td>@item.Status</td>
+                        <td data-order="@item.Created.ToString("MMddyyyyHHmmss")">@item.Created.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td data-order="@item.Finished?.ToString("MMddyyyyHHmmss")">@item.Finished?.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td align="right">
+                            <a class="btn btn-outline-primary"
+                               role="button"
+                               aria-pressed="true"
+                               asp-controller="InventoryData"
+                               asp-action="Details"
+                               asp-route-id="@item.Id">Details</a>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
@@ -81,7 +73,7 @@
                 }
                 @for (var i = Model.StartPage; i <= Model.EndPage; i++)
                 {
-                    var activePage = (Model.PageIndex == i) ? "active" : ""; 
+                    var activePage = (Model.PageIndex == i) ? "active" : "";
                     <li class="page-item @activePage"><a class="page-link search-link" asp-controller="InventoryData" asp-action="List" asp-route-pageId="@i">@i</a></li>
 
                 }
@@ -95,11 +87,10 @@
     </div>
 </div>
 
-<partial name="AddInventoryData" />
-<partial name="UpdateInventoryData" />
-<partial name="DeleteInventoryData" />
-<partial name="..\Shared/Warning" />
+@* <partial name="AddinventoryData" />
+<partial name="UpdateinventoryData" />
+<partial name="DeleteinventoryData" /> *@
 
-@section Scripts{
+@section Scripts {
     <script src="~/js/inventoryData.js" asp-append-version="true"></script>
 }

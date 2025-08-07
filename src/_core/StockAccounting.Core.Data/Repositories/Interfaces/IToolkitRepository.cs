@@ -1,12 +1,13 @@
-﻿using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Models.Data.Toolkit;
+using StockAccounting.Core.Data.Models.Data.ToolkitExternal;
 
 namespace StockAccounting.Core.Data.Repositories.Interfaces
 {
     public interface IToolkitRepository
     {
-        Task<IEnumerable<ToolkitModel>> GetToolkitDataAsync();
+        IQueryable<ToolkitModel> GetToolkitDataQueryable();
 
-        Task<IEnumerable<ToolkitModel>> GetToolkitDataBySearchTextAsync(string searchText); 
+        IQueryable<ToolkitModel> GetToolkitDataBySearchTextQueryable(string searchText);
 
         Task<IEnumerable<ToolkitExternalModel>> GetToolkitExternalDataAsync();
 

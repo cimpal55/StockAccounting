@@ -1,9 +1,9 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
-using StockAccounting.Core.Data.Repositories.Csv;
-using StockAccounting.Core.Data.Models.Data;
+using StockAccounting.Core.Android.Data.Data.Repositories.Csv;
 using StockAccounting.Web.Services.Interfaces;
 using System.Globalization;
+using StockAccounting.Core.Data.Models.Data.ExternalData;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 
 namespace StockAccounting.Web.Services

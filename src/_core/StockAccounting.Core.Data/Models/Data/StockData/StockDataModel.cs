@@ -1,6 +1,6 @@
 ﻿using LinqToDB.Mapping;
 
-namespace StockAccounting.Core.Data.Models.Data
+namespace StockAccounting.Core.Data.Models.Data.StockData
 {
     public sealed record StockDataModel : StockDataBaseModel
     {
@@ -15,15 +15,6 @@ namespace StockAccounting.Core.Data.Models.Data
 
         [Column(Name = "Barcode")]
         public string Barcode { get; set; } = string.Empty;
-
-        [Column(Name = "Employee")]
-        public string Employee { get; set; } = string.Empty;
-
-        [Column(Name = "EmployeeId")]
-        public int EmployeeId { get; set; }
-
-        [Column(Name = "Type")]
-        public string Type { get; set; } = string.Empty;
 
         [Column(Name = "Unit")]
         public string Unit { get; set; } = string.Empty;

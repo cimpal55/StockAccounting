@@ -1,4 +1,5 @@
 ﻿using FluentMigrator;
+using StockAccounting.Migrations._20240325_ToolkitsHistory;
 using StockAccounting.Migrations.Interfaces;
 
 namespace StockAccounting.Migrations.Migrations
@@ -9,7 +10,7 @@ namespace StockAccounting.Migrations.Migrations
         public override ISubMigration[] GetMigrations() =>
             new ISubMigration[]
             {
-                new _20240325_ToolkitsHistory.EveningWorkerInsertMigration(),
+                new EveningWorkerInsertMigration(),
             };
     }
 }

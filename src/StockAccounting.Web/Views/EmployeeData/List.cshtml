@@ -1,9 +1,10 @@
-﻿@model EmployeeDataViewModel
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using StockAccounting.Core.Data.Enums
+@using StockAccounting.Web.Extensions
+@model EmployeeDataViewModel
 @{
     ViewData["Title"] = "EmployeeData";
 }
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.css" />
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css" />
 
 <div class="container">
     <alerts></alerts>

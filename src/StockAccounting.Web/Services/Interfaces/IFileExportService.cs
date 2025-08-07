@@ -1,5 +1,4 @@
-﻿using StockAccounting.Core.Data;
-using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Enums;
 using StockAccounting.Core.Data.Models.Data.Excel;
 using StockAccounting.Web.Models.Data;
 

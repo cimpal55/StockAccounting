@@ -2,8 +2,9 @@
 using System.Net;
 using StockAccounting.EmailBot.Models;
 using StockAccounting.EmailBot.Services.Interfaces;
+using System.Globalization;
+using StockAccounting.Core.Data.Models.Data.EmployeeData;
 using StockAccounting.Core.Data.Repositories.Interfaces;
-using StockAccounting.Core.Data.Models.Data;
 
 namespace StockAccounting.EmailBot.Services
 {
@@ -19,23 +20,28 @@ namespace StockAccounting.EmailBot.Services
         {
             int id = 1;
 
-            string textBody = @"<table border=" + 1 + " cellpadding=" + 5 + " cellspacing=" + 0 + " width = " + 900 + ">" +
-                               "<tr bgcolor='#d3d3d3'> <td><b>ID</b></td> <td><b>Name</b></td> <td><b>ItemNumber</b></td>" +
-                               "<td><b>PluCode</b></td> <td><b>Quantity</b></td> <td><b>Date</b></td> </tr>";
+            string textBody = string.Empty;
 
             var stocksList = await _employeeDataRepository.GetEmployeeDetailsByIdAsync(employeeId);
 
-            if (stocksList.Count() < 0) {
+            if (stocksList.Count() > 0) {
+
+                textBody = @"<table border=" + 1 + " cellpadding=" + 5 + " cellspacing=" + 0 + " width = " + 900 + ">" +
+                            "<tr bgcolor='#d3d3d3'> <td><b>ID</b></td> <td><b>Name</b></td> <td><b>ItemNumber</b></td>" +
+                            "<td><b>Barcode</b></td> <td><b>PluCode</b></td> <td><b>Quantity</b></td></tr>";
+
                 foreach (var item in stocksList)
                 {
                     textBody += @"<tr><td>" + id + "</td><td> " + item.Name + "</td><td> " + item.ItemNumber + "</td>" +
-                                 "<td> " + item.PluCode + "</td><td> " + item.Quantity + "</td><td> " + item.Created + "</td></tr>";
+                                 "<td> " + item.Barcode + "</td> <td> " + item.PluCode + "</td><td> " + item.Quantity + "</td></tr>";
                     id++;
                 }
             }
             else
             {
-                textBody += "<a>Employee doesn't have stocks at this moment.</a>";
+                textBody = @"<table border=" + 1 + " cellpadding=" + 5 + " cellspacing=" + 0 + ">" +
+                            "<tr bgcolor='#d3d3d3'> <td></td> </tr>" +
+                            "<tr> <td>Employee doesn't have stocks at this moment.</td> </tr>";
             }
 
             textBody += "</table>";
@@ -65,7 +71,7 @@ namespace StockAccounting.EmailBot.Services
             var mailMessage = new MailMessage
             {
                 From = new MailAddress(emailFrom ?? ""),
-                Subject = $"Left stocks by {DateTime.Now}",
+                Subject = $"Report on stocks left {DateTime.Now.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture)}",
                 Body = textBody,
                 IsBodyHtml = isBodyHtml,
             };

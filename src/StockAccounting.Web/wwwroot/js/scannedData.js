@@ -1,60 +1,63 @@
-﻿
+﻿var items = [];
 
 $(function () {
-
-    items = $.ajax({
+    $.ajax({
         url: '/ScannedData/GetAutoCompleteExternal',
-        type: 'get',
+        type: 'GET',
+        async: false,
         success: function (data) {
             items = data;
-        },
+        }
     });
-    
-    pageSize = 50
 
-    jQuery.fn.select2.amd.require(["select2/data/array", "select2/utils"],
+    var pageSize = 50;
 
-        function (ArrayData, Utils) {
-            function CustomData($element, options) {
-                CustomData.__super__.constructor.call(this, $element, options);
+    jQuery.fn.select2.amd.require(["select2/data/array", "select2/utils"], function (ArrayData, Utils) {
+        function CustomData($element, options) {
+            CustomData.__super__.constructor.call(this, $element, options);
+        }
+
+        Utils.Extend(CustomData, ArrayData);
+
+        CustomData.prototype.query = function (params, callback) {
+            var results = [];
+
+            if (params.term && params.term !== '') {
+                results = _.filter(items, function (e) {
+                    return e.text.toUpperCase().indexOf(params.term.toUpperCase()) >= 0;
+                });
+            } else {
+                results = items;
             }
-            Utils.Extend(CustomData, ArrayData);
 
-            CustomData.prototype.query = function (params, callback) {
+            if (!("page" in params)) {
+                params.page = 1;
+            }
 
-                var results = [];
-                if (params.term && params.term !== '') {
-                    results = _.filter(items, function (e) {
-                        return e.text.toUpperCase().indexOf(params.term.toUpperCase()) >= 0;
-                    });
-                } else {
-                    results = items;
+            var data = {
+                results: results.slice((params.page - 1) * pageSize, params.page * pageSize),
+                pagination: {
+                    more: params.page * pageSize < results.length
                 }
-
-                if (!("page" in params)) {
-                    params.page = 1;
-                }
-                var data = {};
-                data.results = results.slice((params.page - 1) * pageSize, params.page * pageSize);
-                data.pagination = {};
-                data.pagination.more = params.page * pageSize < results.length;
-                callback(data);
             };
 
-            $(document).ready(function () {
+            callback(data);
+        };
 
-                $("#selectExternalData").select2({
-                    ajax: {},
-                    dataAdapter: CustomData,
-                });
-
-                $("#externalDataId").select2({
-                    ajax: {},
-                    dataAdapter: CustomData,
-                });
+        $(document).ready(function () {
+            $("#selectExternalData").select2({
+                dataAdapter: CustomData,
+                dropdownParent: $("#newScannedDataModal")
             });
-        })
+
+            //$("#externalDataId").select2({
+            //    dataAdapter: CustomData,
+            //    dropdownParent: $("#editScannedDataModal")
+            //});
+        });
+    });
 });
+
 
 $("#newScannedDataButton").on('click',
     function () {
@@ -64,6 +67,10 @@ $("#newScannedDataButton").on('click',
         });
 
         $("#ScannedDataModalComplete").submit(function () {
+
+            $("#quantity").val(function (_, val) {
+                return val.replace(",", ".");
+            });
 
             var postData = $("#scannedDataModalForm").serialize();
 
@@ -84,39 +91,53 @@ $("#newScannedDataButton").on('click',
     });
 
 
-$('#editScannedDataModal').on('show.bs.modal',
-    function (event) {
-        var button = $(event.relatedTarget);
-        var id = button.data('id');
-        var externalDataId = button.data('externaldataid');
-        var inventoryDataId = button.data('inventorydataid')
-        var quantity = button.data('quantity');
+$('#editScannedDataModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
 
-        var modal = $(this);
-        modal.find('#Id').val(id);
-        modal.find('#InventoryDataId').val(inventoryDataId);
-        modal.find('#UpdateExternalData').val(externalDataId);
-        modal.find('#UpdateQuantity').val(quantity);
+    var id = button.data('id');
+    var externalDataId = button.data('externaldataid');
+    var documentDataId = button.data('documentdataid');
+    var quantity = button.data('quantity');
 
-        $("#scannedDataModalComplete").submit(function () {
+    var modal = $(this);
+    modal.find('#id').val(id);
+    modal.find('#documentDataId').val(documentDataId);
+    modal.find('#externalDataId').val(externalDataId);
+    modal.find('#quantity').val(quantity);
+    modal.find('#quantityBefore').val(quantity);
 
-            var postData = $("#scannedDataModalForm").serialize();
+    var externalSelect = modal.find('#externalDataId');
+    var selectedItem = items.find(x => x.id == externalDataId);
 
-            $.ajax({
+    if (selectedItem) {
+        var newOption = new Option(selectedItem.text, selectedItem.id, true, true);
+        externalSelect.append(newOption).trigger('change');
+    }
+
+    $("#scannedDataModalForm").off('submit').on('submit', function (e) {
+        e.preventDefault();
+
+        $("#quantity").val(function (_, val) {
+            return val.replace(",", ".");
+        });
+
+        var postData = $(this).serialize();
+
+        $.ajax({
                 type: "post",
                 url: "/UpdateScannedData",
                 dataType: "json",
                 contentType: "application/x-www-form-urlencoded; charset=UTF-8",
                 data: postData
             })
-                .done(function () {
-                    $("#editScannedDataModal").modal('hide');
-                })
-                .fail(function () {
-                    window.location.reload();
-                });
-        });
+            .done(function () {
+                $("#editScannedDataModal").modal('hide');
+            })
+            .fail(function () {
+                window.location.reload();
+            });
     });
+});
 
 
 $('#deleteScannedDataModal').on('show.bs.modal',

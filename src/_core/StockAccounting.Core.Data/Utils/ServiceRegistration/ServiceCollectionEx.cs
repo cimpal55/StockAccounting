@@ -20,7 +20,8 @@ namespace StockAccounting.Core.Data.Utils.ServiceRegistration
                 .AddScoped<IEmployeeDataRepository, EmployeeDataRepository>()
                 .AddScoped<IUnitsRepository, UnitsRepository>()
                 .AddScoped<IExternalDataRepository, ExternalDataRepository>()
-                .AddScoped<IInventoryDataRepository, InventoryDataRepository>()
+                .AddScoped<IDocumentDataRepository, DocumentDataRepository>()
+                .AddScoped<IInventoryRepository, InventoryRepository>()
                 .AddScoped<IScannedDataRepository, ScannedDataRepository>()
                 .AddScoped<IStockDataRepository, StockDataRepository>()
                 .AddScoped<IToolkitRepository, ToolkitRepository>();

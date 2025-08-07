@@ -1,4 +1,4 @@
-﻿namespace StockAccounting.Core.Data.Models.Data
+﻿namespace StockAccounting.Core.Data.Models.Data.Excel
 {
     public sealed record ScannedReportExcelModel
     {

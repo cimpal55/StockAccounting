@@ -24,6 +24,9 @@ namespace StockAccounting.Migrations._20230816_Initial
 
             migration.Insert.IntoTable(TableName)
                 .Row(new { Name = "Used", Created = DateTime.Now });
+
+            migration.Insert.IntoTable(TableName)
+                .Row(new { Name = "Moved", Created = DateTime.Now });
         }
 
         public void Down(Migration migration)

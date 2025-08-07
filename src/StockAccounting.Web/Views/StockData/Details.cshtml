@@ -31,7 +31,7 @@
                 System.Diagnostics.Debug.Assert(Model != null, nameof(Model) + " != null");
                 System.Diagnostics.Debug.Assert(Model.StockEmployeesModel != null, "Model.StockEmployeesModel != null");
             }
-                @foreach (var item in Model.StockEmployeesModel)
+            @foreach (var item in Model.StockEmployeesModel)
             {
                 <tr id="data_@item.Id">
                     @if (item.DocumentNumber != null)
@@ -45,7 +45,7 @@
                     <td>@item.Employee</td>
                     <td>@String.Format(CultureInfo.InvariantCulture, "{0:0.00}", item.Quantity)</td>
                     <td>@item.StockType</td>
-                    <td>@item.Created.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td data-sort="@item.Created.ToString("yyyy-MM-dd HH:mm:ss")">@item.Created.ToString("yyyy-MM-dd HH:mm:ss")</td>                
                 </tr>
             }
             </tbody>

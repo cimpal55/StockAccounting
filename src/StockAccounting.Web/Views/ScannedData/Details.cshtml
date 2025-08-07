@@ -8,18 +8,20 @@
     <div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item" aria-current="page"><a asp-controller="InventoryData" asp-action="List">Inventory</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a asp-controller="DocumentData" asp-action="List">Document</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Scanned</li>
             </ol>
         </nav>
     </div>
-    <div class="pb-3 nav justify-content-end">
-        <button type="button" id="newScannedDataButton" class="btn btn-success" data-toggle="modal" data-target="#newScannedDataModal">Add Scanned Data</button>
-    </div>
+    
     <div class="container body-content">
         <div class="alert-container-fixed">
             <alerts></alerts>
         </div>
+    </div>
+
+    <div class="pb-3 nav justify-content-end">
+        <button type="button" id="newScannedDataButton" class="btn btn-success" data-toggle="modal" data-target="#newScannedDataModal">Add Scanned Data</button>
     </div>
 
     <div class="fixed-table-container">
@@ -60,15 +62,16 @@
                                 data-toggle="modal"
                                 data-target="#editScannedDataModal"
                                 data-id="@item.Id"
-                                data-inventorydataid="@Context.GetRouteData().Values["id"]"
+                                data-Documentdataid="@Context.GetRouteData().Values["id"]"
                                 data-externaldataid="@item.ExternalDataId"
-                                data-quantity="@item.Quantity">Edit</button>
+                                data-quantity="@item.Quantity"
+                                data-quantitystring="@item.Quantity">Edit</button>
                         <button type="button"
                                 class="btn btn-danger"
                                 data-toggle="modal"
                                 data-target="#deleteScannedDataModal"
                                 data-id="@item.Id"
-                                data-inventorydataid="@Context.GetRouteData().Values["id"]">Delete</button>
+                                data-Documentdataid="@Context.GetRouteData().Values["id"]">Delete</button>
                     </td>
                 </tr>
             }

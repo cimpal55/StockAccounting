@@ -1,4 +1,6 @@
-﻿using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Models.Data.ExternalData;
+using StockAccounting.Core.Data.Models.Data.Toolkit;
+using StockAccounting.Core.Data.Models.Data.ToolkitExternal;
 using System.ComponentModel.DataAnnotations;
 
 namespace StockAccounting.Web.ViewModels

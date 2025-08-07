@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:ViewBase 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:svm="clr-namespace:StockAccounting.Inventory.ViewModels"
+    xmlns:views="clr-namespace:StockAccounting.Inventory.Views"
+    xmlns:converters="clr-namespace:StockAccounting.Inventory.Utils.Converters"
+    xmlns:behaviors="clr-namespace:StockAccounting.Inventory.Utils.Behaviors"
+    xmlns:triggers="clr-namespace:StockAccounting.Inventory.Utils.Triggers"
+    xmlns:models="clr-namespace:StockAccounting.Inventory.Models"
+    xmlns:utility="clr-namespace:StockAccounting.Inventory.Utility"
+    x:Class="StockAccounting.Inventory.Views.ScannedInventoryDataView"
+    x:DataType="svm:ScannedInventoryDataViewModel">
+
+    <Shell.TitleView>
+        <Grid>
+            <Label
+                FontSize="15"
+                VerticalOptions="Center"
+                TextColor="Black"
+                FontAttributes="Bold"
+                Text="{Binding DocNr, StringFormat='{0}'}"/>        
+        </Grid>
+    </Shell.TitleView>
+
+    <ContentPage.Resources>
+        <converters:BoolToColorValueConverter x:Key="BoolToColorValueConverter" />
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button ImageSource="keyboard.png"
+                        Grid.Row="0"
+                        WidthRequest="50"
+                        Clicked="OnToggleKeyboardClicked"
+                        BackgroundColor="Transparent"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Start">
+                </Button>
+
+                <SearchBar Grid.Column="0"
+                           x:Name="documentSearchBar"
+                           Placeholder="Search by Barcode"
+                           VerticalOptions="Center"
+                           FontSize="17"
+                           Focused="OnSearchBoxFocused"
+                           TextChanged="OnSearchTextChanged"
+                           Margin="30,0,0,0"
+                           TextColor="Black"
+                           WidthRequest="250"
+                           MaxLength="13"
+                           Keyboard="Numeric"
+                           Text="{Binding SearchedText}"
+                           SearchCommand="{Binding SearchBarCommand}"
+                           SearchCommandParameter="{Binding SearchedText}">
+                    <SearchBar.Behaviors>
+                        <behaviors:SearchBarDetailTextChangedBehavior />
+                    </SearchBar.Behaviors>
+                    <SearchBar.Triggers>
+                        <EventTrigger Event="Focused">
+                            <triggers:SearchBarFocusTrigger />
+                        </EventTrigger>
+                    </SearchBar.Triggers>
+                </SearchBar>
+
+                <Button 
+				    Grid.Column="1"
+                    Margin="0,0,10,0"
+                    Text="Add"
+                    Command="{Binding NavigateToScannedDataAddCommand}"/>
+            </Grid>
+
+            <CollectionView 
+				    x:Name="collectionView"
+                    Grid.Row="1"
+                    Margin="0,5,0,0"
+                    ItemsSource="{Binding DetailItems}"
+                    ItemsLayout="VerticalList">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ScannedInventoryListItem">
+                        <Grid Padding="5"
+                              BackgroundColor="{Binding IsQuantitiesEqual, 
+                            Converter={StaticResource BoolToColorValueConverter}}">
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="1.5*"/>
+                                <ColumnDefinition Width="1.5*"/>
+                                <ColumnDefinition Width="0.7*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="0.7*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Label                                     
+                                Grid.Column="0"
+                                Grid.Row="0"   
+                                Grid.RowSpan="3"
+                                Margin="5,5,5,0"
+                                FontSize="13"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Start"
+                                TextColor="Black"
+                                Text="{Binding Nr, StringFormat='{0}'}"/>
+
+                            <Label 
+                                Grid.Column="1"
+                                Grid.Row="0"
+                                Grid.ColumnSpan="4"
+                                Margin="5,5,5,0"
+                                FontSize="13"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Center"
+                                TextColor="Black"
+                                Text="{Binding Name, StringFormat='{0}'}"/>
+
+                            <Label 
+                                Grid.Column="1"
+                                Grid.Row="1"
+                                Margin="5,0,5,0"
+                                FontSize="13"
+								HorizontalOptions="Start"
+								VerticalOptions="Center"
+								TextColor="Black"
+								Text="{Binding Code, StringFormat='{0}'}"/>
+
+                            <Label                                
+                                Grid.Column="2"
+                                Grid.Row="1"
+                                Margin="5,0,5,0"
+                                FontSize="13"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Center"
+                                TextColor="Black"
+                                Text="{Binding Barcode, StringFormat='{0}'}"/>
+
+                            <Label
+                                Grid.Column="1"
+                                Grid.Row="2"
+                                Margin="5,0,5,0"
+                                FontSize="13"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Center"
+                                TextColor="Black"
+                                Text="{Binding Unit, StringFormat='{0}'}"/>
+
+                            <Label 
+                                Grid.Column="3"
+                                Grid.RowSpan="3"
+                                Grid.Row="0"
+                                Margin="5,0,5,0"
+                                FontSize="13"
+								HorizontalOptions="Start"
+								VerticalOptions="Center"
+								TextColor="Black"
+								Text="{Binding Amount, StringFormat='{0:N2}'}"/>
+
+                            <Label 
+                                Grid.Column="4"
+                                Grid.Row="0"
+                                Grid.RowSpan="3"
+                                Margin="5,0,5,0"
+                                FontSize="18"
+                                FontAttributes="Bold"
+								HorizontalOptions="Start"
+								VerticalOptions="Center"
+								TextColor="Black"
+								Text="{Binding TotalCheckedQuantity, StringFormat='{0:N2}'}"/>
+
+                            <Entry
+                                x:Name="newCheckedEntry"
+                                Grid.Column="5"
+                                Grid.Row="0"
+                                Grid.RowSpan="3"
+                                HeightRequest="50"   
+                                Keyboard="Numeric"
+                                Text="{Binding CheckedQuantity}"
+                                ReturnType="Done"
+                                ReturnCommand="{Binding Source={RelativeSource AncestorType={x:Type svm:ScannedInventoryDataViewModel}}, Path=SaveEntry}"
+                                ReturnCommandParameter="{Binding .}"
+                                Completed="Entry_Completed">
+                                <Entry.Behaviors>
+                                    <behaviors:EntryValueChangedBehavior x:DataType="svm:ScannedInventoryDataViewModel" />
+                                </Entry.Behaviors>
+                            </Entry>
+                        </Grid>
+                    </DataTemplate>                    
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Button 
+				Grid.Row="2"                
+                Text="Sync data with server"
+                Command="{Binding SyncDetails}"/>
+        </Grid>
+    </ContentPage.Content>
+</views:ViewBase>

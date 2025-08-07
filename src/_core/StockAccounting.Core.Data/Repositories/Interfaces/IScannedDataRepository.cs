@@ -1,4 +1,7 @@
-﻿using StockAccounting.Core.Data.Models.Data;
+﻿using StockAccounting.Core.Data.Enums;
+using StockAccounting.Core.Data.Models.Data.Excel;
+using StockAccounting.Core.Data.Models.Data.ScannedData;
+using StockAccounting.Core.Data.Models.Data.StockEmployees;
 using StockAccounting.Core.Data.Models.DataTransferObjects;
 
 namespace StockAccounting.Core.Data.Repositories.Interfaces
@@ -9,13 +12,13 @@ namespace StockAccounting.Core.Data.Repositories.Interfaces
         Task UpdateScannedDataAsync(ScannedDataBaseModel item);
         Task<IEnumerable<SynchronizationModel>> GetBarcodesAsync();
         Task SynchronizationWithServiceTrader(IEnumerable<SynchronizationModel> barcodes);
-        Task<IEnumerable<ScannedDataModel>> GetScannedDataByDocumentIdAsync(int inventoryDataId);
+        IQueryable<ScannedDataModel> GetScannedDataByDocumentIdQueryable(int documentDataId);
         Task<IEnumerable<ScannedReportExcelModel>> GetScannedReportDataAsync(IEnumerable<int> employeeList, FileExport mode);
         string FileExportMode(FileExport mode);
-        bool IsSynchronizationDocument(int inventoryDataId);
-        int ReturnDocumentEmployees(int inventoryDataId);
+        bool IsSynchronizationDocument(int documentDataId);
+        int ReturnDocumentEmployees(int documentDataId);
         string ReturnEmployeeNotificationEmail(int employeeId);
-        Task<Dictionary<string, string>> GetDocumentNumber(int employeeId, int inventoryDataId);
+        Task<Dictionary<string, string>> GetDocumentNumber(int employeeId, int documentDataId);
         Task<StockEmployeesBaseModel> GetStockEmployeeByScannedData(ScannedDataBaseModel model);
     }
 }

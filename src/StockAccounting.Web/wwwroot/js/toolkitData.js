@@ -145,6 +145,7 @@ $(function () {
                 $('#externalData_' + j).select2({
                     ajax: {},
                     dataAdapter: CustomData,
+                    dropdownParent: $("#newToolkitDataModal")
                 });
                 j++;
             });
@@ -153,6 +154,7 @@ $(function () {
                 $("#externalData_0"/* + Number(j-1)*/).select2({
                     ajax: {},
                     dataAdapter: CustomData,
+                    dropdownParent: $("#newToolkitDataModal")
                 });
 
             });

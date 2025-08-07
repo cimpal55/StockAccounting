@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 
-namespace StockAccounting.Core.Data.Repositories.Csv
+namespace StockAccounting.Core.Android.Data.Data.Repositories.Csv
 {
     public record ExternalCsvModel
     {

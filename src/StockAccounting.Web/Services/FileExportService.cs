@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using StockAccounting.Core.Data;
-using StockAccounting.Core.Data.Models.Data;
+using QuestPDF.Fluent;
+using QuestPDF.Infrastructure;
+using StockAccounting.Core.Data.Enums;
 using StockAccounting.Core.Data.Models.Data.Excel;
-using StockAccounting.Core.Data.Models.DataTransferObjects;
 using StockAccounting.Core.Data.Repositories.Interfaces;
 using StockAccounting.Web.Extensions;
 using StockAccounting.Web.Models.Data;
@@ -192,5 +192,36 @@ namespace StockAccounting.Web.Services
 
             return stream;
         }
+
+        //public async Task<EmployeeExportFileResponse> ExportPdfAsync(EmployeeExportFileRequest req, int employeeId, CancellationToken ct = default)
+        //{
+        //    IDocument document;
+        //    var data = await _employeeDataRepository.GetEmployeeDetailsByIdAsync(employeeId);
+
+        //    var docExportRecords = data.ToList();
+        //    if (docExportRecords.Any(x => !string.IsNullOrEmpty(x.Employee)))
+        //    {
+        //        document = await _pdfService.CreateEmployeePdf(docExportRecords, req.DocType)
+        //                        .ConfigureAwait(false);
+        //    }
+        //    else
+        //    {
+        //        throw new Exception();
+        //    }
+
+        //    return CreateExportResponse(document);
+        //}
+
+        //private static EmployeeExportFileResponse CreateExportResponse(IDocument document)
+        //{
+        //    var stream = new MemoryStream();
+        //    document.GeneratePdf(stream);
+        //    stream.Position = 0;
+
+        //    return new EmployeeExportFileResponse(stream)
+        //    {
+        //        ContentType = "application/pdf"
+        //    };
+        //}
     }
 }
